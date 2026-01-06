@@ -137,27 +137,30 @@ struct LivePhotoView: View {
     let mediaItem: MediaItem
     @State private var livePhoto: PHLivePhoto?
     @State private var isLoading = true
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        ZStack {
-            if let livePhoto = livePhoto {
-                LivePhotoViewRepresentable(livePhoto: livePhoto)
-                    .ignoresSafeArea()
-            } else if isLoading {
-                ProgressView()
-                    .tint(.white)
-                    .scaleEffect(1.5)
-            } else {
-                Text("Failed to load Live Photo")
-                    .foregroundColor(.white)
+        GeometryReader { proxy in
+            ZStack {
+                if let livePhoto = livePhoto {
+                    LivePhotoViewRepresentable(livePhoto: livePhoto)
+                        .ignoresSafeArea()
+                } else if isLoading {
+                    ProgressView()
+                        .tint(.white)
+                        .scaleEffect(1.5)
+                } else {
+                    Text("Failed to load Live Photo")
+                        .foregroundColor(.white)
+                }
             }
-        }
-        .onAppear {
-            loadLivePhoto()
+            .onAppear {
+                loadLivePhoto(targetSize: proxy.size)
+            }
         }
     }
 
-    private func loadLivePhoto() {
+    private func loadLivePhoto(targetSize: CGSize) {
         guard let asset = mediaItem.asset else {
             isLoading = false
             return
@@ -169,7 +172,7 @@ struct LivePhotoView: View {
 
         PHImageManager.default().requestLivePhoto(
             for: asset,
-            targetSize: UIScreen.main.bounds.size,
+            targetSize: targetSize,
             contentMode: .aspectFit,
             options: options
         ) { livePhoto, _ in
