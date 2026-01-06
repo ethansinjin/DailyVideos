@@ -32,51 +32,70 @@ struct ContentView: View {
     }
 
     private var calendarView: some View {
-        VStack(spacing: 0) {
-            // Month header with navigation
-            MonthHeaderView(
-                monthData: viewModel.currentMonth,
-                onPrevious: { viewModel.goToPreviousMonth() },
-                onNext: { viewModel.goToNextMonth() },
-                onToday: { viewModel.goToToday() }
-            )
-            .padding(.bottom, 16)
+        ScrollView {
+            VStack(spacing: 0) {
+                // Month header with navigation
+                MonthHeaderView(
+                    monthData: viewModel.currentMonth,
+                    onPrevious: { viewModel.goToPreviousMonth() },
+                    onNext: { viewModel.goToNextMonth() },
+                    onToday: { viewModel.goToToday() }
+                )
+                .padding(.bottom, 16)
 
-            // Day of week labels
-            DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
-                .padding(.bottom, 8)
+                // Day of week labels
+                DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
+                    .padding(.bottom, 8)
 
-            // Calendar grid
-            ZStack {
-                LazyVGrid(columns: columns, spacing: 4) {
-                    ForEach(viewModel.currentMonth.days) { day in
-                        DayCell(
-                            calendarDay: day,
-                            isToday: viewModel.isToday(day.date)
-                        )
-                        .onTapGesture {
-                            handleDayTap(day)
+                // Calendar grid
+                ZStack {
+                    LazyVGrid(columns: columns, spacing: 4) {
+                        ForEach(viewModel.currentMonth.days) { day in
+                            DayCell(
+                                calendarDay: day,
+                                isToday: viewModel.isToday(day.date)
+                            )
+                            .onTapGesture {
+                                handleDayTap(day)
+                            }
                         }
                     }
-                }
-                .padding(.horizontal)
+                    .padding(.horizontal)
 
-                // Loading indicator
-                if viewModel.isLoading {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .padding()
-                        .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(10)
+                    // Loading indicator
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(10)
+                    }
                 }
+
+                Spacer(minLength: 20)
             }
-
-            Spacer()
+            .padding(.top)
         }
-        .padding(.top)
+        .refreshable {
+            await refreshCalendar()
+        }
+    }
+
+    private func refreshCalendar() async {
+        await withCheckedContinuation { continuation in
+            viewModel.refreshMediaData()
+            // Give a small delay to ensure UI updates
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                continuation.resume()
+            }
+        }
     }
 
     private func handleDayTap(_ day: CalendarDay) {
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+
         viewModel.selectDay(day)
         // Load media items for the selected day on background thread
         DispatchQueue.global(qos: .userInitiated).async {

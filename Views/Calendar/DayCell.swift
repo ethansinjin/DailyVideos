@@ -6,6 +6,7 @@ struct DayCell: View {
 
     @State private var thumbnail: UIImage?
     @State private var isLoadingThumbnail = false
+    @State private var isPressed = false
 
     var body: some View {
         ZStack {
@@ -17,6 +18,7 @@ struct DayCell: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
                     .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
             } else {
                 backgroundColor
             }
@@ -24,7 +26,7 @@ struct DayCell: View {
             // Gradient overlay for better text visibility
             if thumbnail != nil {
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.black.opacity(0.4), Color.clear]),
+                    gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]),
                     startPoint: .top,
                     endPoint: .center
                 )
@@ -51,6 +53,9 @@ struct DayCell: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(borderColor, lineWidth: isToday ? 2 : 0)
         )
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .animation(.easeInOut(duration: 0.3), value: thumbnail != nil)
         .onAppear {
             loadThumbnailIfNeeded()
         }

@@ -29,13 +29,21 @@ struct DayDetailView: View {
                     // Empty state
                     Spacer()
                     VStack(spacing: 16) {
-                        Image(systemName: "photo.on.rectangle.angled")
+                        Image(systemName: "video.slash")
                             .font(.system(size: 60))
                             .foregroundColor(.gray)
 
-                        Text("No videos or Live Photos")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                        VStack(spacing: 8) {
+                            Text("No Videos or Live Photos")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
+                            Text("Record some memories for this day!")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
                     }
                     Spacer()
                 } else {
