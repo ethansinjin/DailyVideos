@@ -8,6 +8,25 @@ An iOS app that displays videos and Live Photos in a calendar view, allowing use
 - ✅ Simple calendar grid layout (`ContentView.swift`)
 - ✅ Basic day cell component (`DayCell.swift`)
 
+## Development Workflow
+
+### Auto-Commit Policy
+Claude should automatically commit logical groupings of changes without asking for permission. A logical grouping is defined as:
+- Changes from a single user request
+- Related files that form a cohesive unit of work
+- A reasonable PR size that is human-reviewable (typically one feature, bug fix, or refactoring)
+
+Examples of logical groupings:
+- Removing a redundant model and updating all references
+- Adding a new feature with its model, view, and viewmodel
+- Refactoring a service and its callers
+- Fixing a bug across multiple related files
+
+Do NOT auto-commit if:
+- Changes are exploratory or experimental
+- Multiple unrelated changes are mixed together
+- The user explicitly asks to review before committing
+
 ## Architecture Plan
 
 ### 1. Data Models
