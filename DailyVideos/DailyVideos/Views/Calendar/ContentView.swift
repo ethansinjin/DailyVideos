@@ -3,11 +3,16 @@ internal import Photos
 
 struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()
-    @State private var showingDayDetail = false
-    @State private var selectedDayMediaItems: [MediaItem] = []
+    @State private var selectedDayDetail: DayDetail?
     @State private var showingSettings = false
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+
+    private struct DayDetail: Identifiable {
+        let id = UUID()
+        let day: CalendarDay
+        let mediaItems: [MediaItem]
+    }
 
     var body: some View {
         NavigationView {
@@ -30,17 +35,15 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingDayDetail) {
-            if let selectedDay = viewModel.selectedDay {
-                DayDetailView(
-                    day: selectedDay,
-                    mediaItems: selectedDayMediaItems,
-                    onDismiss: {
-                        showingDayDetail = false
-                        viewModel.selectedDay = nil
-                    }
-                )
-            }
+        .sheet(item: $selectedDayDetail) { dayDetail in
+            DayDetailView(
+                day: dayDetail.day,
+                mediaItems: dayDetail.mediaItems,
+                onDismiss: {
+                    selectedDayDetail = nil
+                    viewModel.selectedDay = nil
+                }
+            )
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
@@ -117,8 +120,8 @@ struct ContentView: View {
         DispatchQueue.global(qos: .userInitiated).async {
             let items = viewModel.getMediaItems(for: day)
             DispatchQueue.main.async {
-                selectedDayMediaItems = items
-                showingDayDetail = true
+                // Only present sheet after media items are loaded
+                selectedDayDetail = DayDetail(day: day, mediaItems: items)
             }
         }
     }
