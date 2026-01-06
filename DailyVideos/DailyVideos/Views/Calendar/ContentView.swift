@@ -35,29 +35,27 @@ struct ContentView: View {
                     }
                 }
 
-                ToolbarItem(placement: .principal) {
-                    Button(action: { viewModel.goToToday() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar.circle.fill")
-                                .font(.caption)
-                            Text("Today")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background {
-                            Capsule()
-                                .fill(.blue.gradient)
-                                .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
+                        Button(action: { viewModel.goToToday() }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "calendar.circle.fill")
+                                    .font(.caption)
+                                Text("Today")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background {
+                                Capsule()
+                                    .fill(.blue.gradient)
+                                    .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 1)
+                            }
+                        }
+                        .buttonStyle(.plain)
+
                         Button(action: { viewModel.goToNextMonth() }) {
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.blue)
