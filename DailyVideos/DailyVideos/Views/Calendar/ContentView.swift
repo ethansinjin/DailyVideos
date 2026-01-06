@@ -1,4 +1,5 @@
 import SwiftUI
+internal import Photos
 
 struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()

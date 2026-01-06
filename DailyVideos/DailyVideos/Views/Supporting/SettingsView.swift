@@ -15,7 +15,7 @@ struct SettingsView: View {
                     Toggle(isOn: $notificationsEnabled) {
                         Label("Daily Reminders", systemImage: "bell.fill")
                     }
-                    .onChange(of: notificationsEnabled) { newValue in
+                    .onChange(of: notificationsEnabled) { oldValue, newValue in
                         handleNotificationToggle(newValue)
                     }
 
@@ -25,7 +25,7 @@ struct SettingsView: View {
                             selection: $notificationTime,
                             displayedComponents: .hourAndMinute
                         )
-                        .onChange(of: notificationTime) { newValue in
+                        .onChange(of: notificationTime) { oldValue, newValue in
                             NotificationManager.shared.notificationTime = newValue
                             NotificationManager.shared.updateNotificationSchedule()
                         }

@@ -59,7 +59,7 @@ struct DayCell: View {
         .onAppear {
             loadThumbnailIfNeeded()
         }
-        .onChange(of: calendarDay.representativeAssetIdentifier) { _ in
+        .onChange(of: calendarDay.representativeAssetIdentifier) { oldValue, newValue in
             loadThumbnailIfNeeded()
         }
     }
@@ -97,3 +97,4 @@ struct DayCell: View {
         }
     }
 }
+
