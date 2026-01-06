@@ -1,6 +1,6 @@
 import SwiftUI
 import AVKit
-import Photos
+internal import Photos
 import PhotosUI
 
 struct MediaDetailView: View {

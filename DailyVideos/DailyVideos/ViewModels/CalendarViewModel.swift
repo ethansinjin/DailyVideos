@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
-import Photos
+internal import Photos
 
 /// ViewModel for managing calendar state
 class CalendarViewModel: ObservableObject {

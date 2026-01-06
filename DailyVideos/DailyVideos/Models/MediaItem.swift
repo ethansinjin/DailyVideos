@@ -1,6 +1,6 @@
 import Foundation
 import UIKit
-import Photos
+internal import Photos
 
 /// Represents a single video or Live Photo from the photo library
 struct MediaItem: Identifiable {

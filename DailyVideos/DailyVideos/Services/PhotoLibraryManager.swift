@@ -1,5 +1,5 @@
 import Foundation
-import Photos
+internal import Photos
 import UIKit
 import Combine
 
