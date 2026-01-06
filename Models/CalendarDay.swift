@@ -1,0 +1,25 @@
+import Foundation
+
+/// Represents a single day in the calendar
+struct CalendarDay: Identifiable {
+    // Use date as stable identifier to prevent SwiftUI from recreating views
+    var id: Date { date }
+
+    let date: Date
+    let day: Int
+    let isInCurrentMonth: Bool
+
+    // Media-related properties
+    var mediaCount: Int = 0
+    var representativeAssetIdentifier: String? = nil
+
+    var hasMedia: Bool {
+        mediaCount > 0
+    }
+
+    init(date: Date, day: Int, isInCurrentMonth: Bool) {
+        self.date = date
+        self.day = day
+        self.isInCurrentMonth = isInCurrentMonth
+    }
+}
