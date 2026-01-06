@@ -211,7 +211,7 @@ struct LivePhotoViewRepresentable: UIViewRepresentable {
 
 #Preview("Multiple Items") {
     MediaDetailView(
-        mediaItems: .sampleMediaItems,
+        mediaItems: MediaItem.sampleMediaItems,
         initialIndex: 0,
         onDismiss: {}
     )

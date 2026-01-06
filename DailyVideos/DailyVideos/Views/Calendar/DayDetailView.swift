@@ -100,8 +100,9 @@ struct DayDetailView: View {
 
 #Preview("Empty") {
     DayDetailView(
-        day: MediaItem.sampleDayWithoutMedia,
+        day: .sampleDayWithoutMedia,
         mediaItems: [],
         onDismiss: {}
     )
 }
+
