@@ -1,12 +1,13 @@
 import Foundation
 import SwiftUI
 import Combine
+import Photos
 
 /// ViewModel for managing calendar state
 class CalendarViewModel: ObservableObject {
     @Published var currentMonth: MonthData
     @Published var selectedDay: CalendarDay?
-    @Published var permissionStatus: PermissionStatus = .notDetermined
+    @Published var permissionStatus: PHAuthorizationStatus = .notDetermined
     @Published var isLoading: Bool = false
 
     private let calendarManager = CalendarManager.shared

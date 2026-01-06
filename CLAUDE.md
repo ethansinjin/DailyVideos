@@ -75,7 +75,7 @@ An iOS app that displays videos and Live Photos in a calendar view, allowing use
   - `@Published var currentMonth: MonthData`
   - `@Published var selectedDay: CalendarDay?`
   - `@Published var isLoading: Bool`
-  - `@Published var permissionStatus: PermissionStatus`
+  - `@Published var permissionStatus: PHAuthorizationStatus`
 - Methods:
   - `loadMonth(year:month:)`
   - `goToNextMonth()`
@@ -188,8 +188,7 @@ DailyVideos/
 ├── Models/
 │   ├── MediaItem.swift
 │   ├── CalendarDay.swift
-│   ├── MonthData.swift
-│   └── PermissionStatus.swift
+│   └── MonthData.swift
 ├── ViewModels/
 │   └── CalendarViewModel.swift
 ├── Views/

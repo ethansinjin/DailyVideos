@@ -7,7 +7,7 @@ import Combine
 class PhotoLibraryManager: ObservableObject {
     static let shared = PhotoLibraryManager()
 
-    @Published var permissionStatus: PermissionStatus = .notDetermined
+    @Published var permissionStatus: PHAuthorizationStatus = .notDetermined
 
     private let imageManager = PHCachingImageManager()
     private var thumbnailCache: [String: UIImage] = [:]
@@ -31,23 +31,10 @@ class PhotoLibraryManager: ObservableObject {
     /// Update the current permission status
     private func updatePermissionStatus() {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        let newStatus: PermissionStatus
-        switch status {
-        case .notDetermined:
-            newStatus = .notDetermined
-        case .restricted, .denied:
-            newStatus = .denied
-        case .authorized:
-            newStatus = .authorized
-        case .limited:
-            newStatus = .limited
-        @unknown default:
-            newStatus = .notDetermined
-        }
 
         // Always update @Published properties on main thread
         DispatchQueue.main.async { [weak self] in
-            self?.permissionStatus = newStatus
+            self?.permissionStatus = status
         }
     }
 
