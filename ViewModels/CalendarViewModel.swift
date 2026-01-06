@@ -72,25 +72,37 @@ class CalendarViewModel: ObservableObject {
     private func loadCurrentMonth() {
         isLoading = true
 
-        // Generate calendar structure
-        var monthData = calendarManager.generateMonth(year: currentYear, month: currentMonthNumber)
+        // Capture current values for background thread
+        let year = currentYear
+        let month = currentMonthNumber
 
-        // Fetch media counts for the month
-        let mediaCounts = photoLibraryManager.fetchMediaCounts(for: currentYear, month: currentMonthNumber)
+        // Perform heavy operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
 
-        // Update days with media counts
-        let calendar = Calendar.current
-        let updatedDays = monthData.days.map { day -> CalendarDay in
-            var updatedDay = day
-            let dayStart = calendar.startOfDay(for: day.date)
-            updatedDay.mediaCount = mediaCounts[dayStart] ?? 0
-            return updatedDay
+            // Generate calendar structure
+            var monthData = self.calendarManager.generateMonth(year: year, month: month)
+
+            // Fetch media counts for the month
+            let mediaCounts = self.photoLibraryManager.fetchMediaCounts(for: year, month: month)
+
+            // Update days with media counts
+            let calendar = Calendar.current
+            let updatedDays = monthData.days.map { day -> CalendarDay in
+                var updatedDay = day
+                let dayStart = calendar.startOfDay(for: day.date)
+                updatedDay.mediaCount = mediaCounts[dayStart] ?? 0
+                return updatedDay
+            }
+
+            monthData = MonthData(year: year, month: month, days: updatedDays)
+
+            // Update UI on main thread
+            DispatchQueue.main.async {
+                self.currentMonth = monthData
+                self.isLoading = false
+            }
         }
-
-        monthData = MonthData(year: currentYear, month: currentMonthNumber, days: updatedDays)
-        currentMonth = monthData
-
-        isLoading = false
     }
 
     /// Check if a date is today

@@ -2,7 +2,9 @@ import Foundation
 
 /// Represents a single day in the calendar
 struct CalendarDay: Identifiable {
-    let id = UUID()
+    // Use date as stable identifier to prevent SwiftUI from recreating views
+    var id: Date { date }
+
     let date: Date
     let day: Int
     let isInCurrentMonth: Bool

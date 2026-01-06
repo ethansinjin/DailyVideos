@@ -30,17 +30,23 @@ class PhotoLibraryManager: ObservableObject {
     /// Update the current permission status
     private func updatePermissionStatus() {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        let newStatus: PermissionStatus
         switch status {
         case .notDetermined:
-            permissionStatus = .notDetermined
+            newStatus = .notDetermined
         case .restricted, .denied:
-            permissionStatus = .denied
+            newStatus = .denied
         case .authorized:
-            permissionStatus = .authorized
+            newStatus = .authorized
         case .limited:
-            permissionStatus = .limited
+            newStatus = .limited
         @unknown default:
-            permissionStatus = .notDetermined
+            newStatus = .notDetermined
+        }
+
+        // Always update @Published properties on main thread
+        DispatchQueue.main.async { [weak self] in
+            self?.permissionStatus = newStatus
         }
     }
 
@@ -100,7 +106,8 @@ class PhotoLibraryManager: ObservableObject {
     func fetchMediaCounts(for year: Int, month: Int) -> [Date: Int] {
         let calendar = Calendar.current
         guard let startOfMonth = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
-              let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth) else {
+              let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth),
+              let endOfMonthPlusOne = calendar.date(byAdding: .day, value: 1, to: endOfMonth) else {
             return [:]
         }
 
@@ -108,7 +115,7 @@ class PhotoLibraryManager: ObservableObject {
         options.predicate = NSPredicate(
             format: "(creationDate >= %@) AND (creationDate <= %@)",
             startOfMonth as NSDate,
-            calendar.date(byAdding: .day, value: 1, to: endOfMonth)! as NSDate
+            endOfMonthPlusOne as NSDate
         )
 
         // Fetch videos
@@ -119,7 +126,7 @@ class PhotoLibraryManager: ObservableObject {
         imageOptions.predicate = NSPredicate(
             format: "(creationDate >= %@) AND (creationDate <= %@) AND (mediaSubtypes & %d) != 0",
             startOfMonth as NSDate,
-            calendar.date(byAdding: .day, value: 1, to: endOfMonth)! as NSDate,
+            endOfMonthPlusOne as NSDate,
             PHAssetMediaSubtype.photoLive.rawValue
         )
         let livePhotoAssets = PHAsset.fetchAssets(with: .image, options: imageOptions)
