@@ -67,35 +67,38 @@ struct ContentView: View {
                     )
                     .padding(.bottom, 16)
 
-                    // Day of week labels
-                    DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
-                        .padding(.bottom, 8)
+                    // Day of week labels and calendar grid container
+                    VStack(spacing: 0) {
+                        // Day of week labels
+                        DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
+                            .padding(.bottom, 8)
 
-                    // Calendar grid with size-appropriate constraints
-                    ZStack {
-                        LazyVGrid(columns: columns, spacing: 4) {
-                            ForEach(viewModel.currentMonth.days) { day in
-                                DayCell(
-                                    calendarDay: day,
-                                    isToday: viewModel.isToday(day.date)
-                                )
-                                .onTapGesture {
-                                    handleDayTap(day)
+                        // Calendar grid with size-appropriate constraints
+                        ZStack {
+                            LazyVGrid(columns: columns, spacing: 4) {
+                                ForEach(viewModel.currentMonth.days) { day in
+                                    DayCell(
+                                        calendarDay: day,
+                                        isToday: viewModel.isToday(day.date)
+                                    )
+                                    .onTapGesture {
+                                        handleDayTap(day)
+                                    }
                                 }
                             }
-                        }
-                        .padding(.horizontal)
-                        .frame(maxWidth: min(geometry.size.width, 800))
 
-                        // Loading indicator
-                        if viewModel.isLoading {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .padding()
-                                .background(Color(.systemBackground).opacity(0.8))
-                                .cornerRadius(10)
+                            // Loading indicator
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .padding()
+                                    .background(Color(.systemBackground).opacity(0.8))
+                                    .cornerRadius(10)
+                            }
                         }
                     }
+                    .padding(.horizontal)
+                    .frame(maxWidth: min(geometry.size.width, 800))
 
                     Spacer(minLength: 20)
                 }
