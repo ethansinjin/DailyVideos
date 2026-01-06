@@ -200,3 +200,19 @@ struct LivePhotoViewRepresentable: UIViewRepresentable {
         uiView.livePhoto = livePhoto
     }
 }
+
+#Preview("Single Video") {
+    MediaDetailView(
+        mediaItems: [.sampleVideo],
+        initialIndex: 0,
+        onDismiss: {}
+    )
+}
+
+#Preview("Multiple Items") {
+    MediaDetailView(
+        mediaItems: .sampleMediaItems,
+        initialIndex: 0,
+        onDismiss: {}
+    )
+}

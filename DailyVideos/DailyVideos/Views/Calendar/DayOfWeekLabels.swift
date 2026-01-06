@@ -16,3 +16,7 @@ struct DayOfWeekLabels: View {
         .padding(.horizontal)
     }
 }
+
+#Preview {
+    DayOfWeekLabels(weekdaySymbols: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
+}

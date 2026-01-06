@@ -89,3 +89,19 @@ struct DayDetailView: View {
         return formatter.string(from: day.date)
     }
 }
+
+#Preview("With Media") {
+    DayDetailView(
+        day: .sampleDayWithMedia,
+        mediaItems: MediaItem.sampleMediaItems,
+        onDismiss: {}
+    )
+}
+
+#Preview("Empty") {
+    DayDetailView(
+        day: MediaItem.sampleDayWithoutMedia,
+        mediaItems: [],
+        onDismiss: {}
+    )
+}

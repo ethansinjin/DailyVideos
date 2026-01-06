@@ -8,6 +8,21 @@ An iOS app that displays videos and Live Photos in a calendar view, allowing use
 - ✅ Simple calendar grid layout (`ContentView.swift`)
 - ✅ Basic day cell component (`DayCell.swift`)
 
+## Build Commands
+
+Use Xcode to build and run:
+```bash
+# Open the project
+open "DailyVideos/DailyVideos.xcodeproj"
+
+# Build from command line
+cd DailyVideos
+xcodebuild -scheme DailyVideos -destination 'platform=iOS Simulator,name=iPhone 17' build
+
+# Run tests
+xcodebuild -scheme DailyVideos -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
+
 ## Development Workflow
 
 ### Auto-Commit Policy

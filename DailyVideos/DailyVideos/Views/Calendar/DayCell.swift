@@ -98,3 +98,27 @@ struct DayCell: View {
     }
 }
 
+#Preview("Day with Media") {
+    DayCell(calendarDay: .sampleDayWithMedia, isToday: false)
+        .frame(height: 60)
+        .padding()
+}
+
+#Preview("Day without Media") {
+    DayCell(calendarDay: .sampleDayWithoutMedia, isToday: false)
+        .frame(height: 60)
+        .padding()
+}
+
+#Preview("Today") {
+    DayCell(calendarDay: .sampleDayWithoutMedia, isToday: true)
+        .frame(height: 60)
+        .padding()
+}
+
+#Preview("Outside Month") {
+    DayCell(calendarDay: .sampleDayOutsideMonth, isToday: false)
+        .frame(height: 60)
+        .padding()
+}
+

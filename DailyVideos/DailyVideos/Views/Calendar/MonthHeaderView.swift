@@ -49,3 +49,13 @@ struct MonthHeaderView: View {
         }
     }
 }
+
+#Preview {
+    MonthHeaderView(
+        monthData: .sampleMonth,
+        onPrevious: {},
+        onNext: {},
+        onToday: {}
+    )
+    .padding()
+}

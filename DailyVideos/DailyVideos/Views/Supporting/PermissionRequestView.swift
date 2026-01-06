@@ -36,3 +36,7 @@ struct PermissionRequestView: View {
         }
     }
 }
+
+#Preview {
+    PermissionRequestView()
+}

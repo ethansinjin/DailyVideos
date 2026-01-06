@@ -82,3 +82,15 @@ struct MediaThumbnailView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
 }
+
+#Preview("Video") {
+    MediaThumbnailView(mediaItem: .sampleVideo)
+        .frame(width: 120, height: 120)
+        .padding()
+}
+
+#Preview("Live Photo") {
+    MediaThumbnailView(mediaItem: .sampleLivePhoto)
+        .frame(width: 120, height: 120)
+        .padding()
+}
