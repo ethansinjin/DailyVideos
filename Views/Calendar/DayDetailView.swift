@@ -5,6 +5,9 @@ struct DayDetailView: View {
     let mediaItems: [MediaItem]
     let onDismiss: () -> Void
 
+    @State private var showingMediaDetail = false
+    @State private var selectedMediaIndex = 0
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
 
     var body: some View {
@@ -39,9 +42,13 @@ struct DayDetailView: View {
                     // Media grid
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 8) {
-                            ForEach(mediaItems) { item in
+                            ForEach(Array(mediaItems.enumerated()), id: \.element.id) { index, item in
                                 MediaThumbnailView(mediaItem: item)
                                     .aspectRatio(1, contentMode: .fill)
+                                    .onTapGesture {
+                                        selectedMediaIndex = index
+                                        showingMediaDetail = true
+                                    }
                             }
                         }
                         .padding()
@@ -56,6 +63,15 @@ struct DayDetailView: View {
                     }
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showingMediaDetail) {
+            MediaDetailView(
+                mediaItems: mediaItems,
+                initialIndex: selectedMediaIndex,
+                onDismiss: {
+                    showingMediaDetail = false
+                }
+            )
         }
     }
 
