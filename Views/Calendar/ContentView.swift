@@ -4,17 +4,29 @@ struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()
     @State private var showingDayDetail = false
     @State private var selectedDayMediaItems: [MediaItem] = []
+    @State private var showingSettings = false
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
     var body: some View {
-        Group {
-            if viewModel.permissionStatus == .denied {
-                // Show permission request view
-                PermissionRequestView()
-            } else {
-                // Show calendar
-                calendarView
+        NavigationView {
+            Group {
+                if viewModel.permissionStatus == .denied {
+                    // Show permission request view
+                    PermissionRequestView()
+                } else {
+                    // Show calendar
+                    calendarView
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingSettings = true }) {
+                        Image(systemName: "gear")
+                            .foregroundColor(.primary)
+                    }
+                }
             }
         }
         .sheet(isPresented: $showingDayDetail) {
@@ -28,6 +40,9 @@ struct ContentView: View {
                     }
                 )
             }
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
 
