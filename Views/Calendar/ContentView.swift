@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()
+    @State private var showingDayDetail = false
+    @State private var selectedDayMediaItems: [MediaItem] = []
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
@@ -13,6 +15,18 @@ struct ContentView: View {
             } else {
                 // Show calendar
                 calendarView
+            }
+        }
+        .sheet(isPresented: $showingDayDetail) {
+            if let selectedDay = viewModel.selectedDay {
+                DayDetailView(
+                    day: selectedDay,
+                    mediaItems: selectedDayMediaItems,
+                    onDismiss: {
+                        showingDayDetail = false
+                        viewModel.selectedDay = nil
+                    }
+                )
             }
         }
     }
@@ -41,7 +55,7 @@ struct ContentView: View {
                             isToday: viewModel.isToday(day.date)
                         )
                         .onTapGesture {
-                            viewModel.selectDay(day)
+                            handleDayTap(day)
                         }
                     }
                 }
@@ -60,5 +74,17 @@ struct ContentView: View {
             Spacer()
         }
         .padding(.top)
+    }
+
+    private func handleDayTap(_ day: CalendarDay) {
+        viewModel.selectDay(day)
+        // Load media items for the selected day on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            let items = viewModel.getMediaItems(for: day)
+            DispatchQueue.main.async {
+                selectedDayMediaItems = items
+                showingDayDetail = true
+            }
+        }
     }
 }
