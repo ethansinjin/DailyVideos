@@ -6,8 +6,12 @@ struct DayDetailView: View {
     let onDismiss: () -> Void
 
     @State private var selectedMedia: SelectedMedia?
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
+    private var columns: [GridItem] {
+        let count = horizontalSizeClass == .regular ? 5 : 3
+        return Array(repeating: GridItem(.flexible(), spacing: 8), count: count)
+    }
 
     private struct SelectedMedia: Identifiable {
         let id = UUID()
@@ -15,7 +19,7 @@ struct DayDetailView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Header with date and count
                 VStack(spacing: 8) {

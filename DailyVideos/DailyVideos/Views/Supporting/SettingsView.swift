@@ -8,7 +8,7 @@ struct SettingsView: View {
     @State private var showingPermissionAlert = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 // Notifications Section
                 Section {

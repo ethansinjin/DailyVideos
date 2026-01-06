@@ -15,7 +15,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if viewModel.permissionStatus == .denied {
                     // Show permission request view
@@ -44,59 +44,67 @@ struct ContentView: View {
                     viewModel.selectedDay = nil
                 }
             )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 
     private var calendarView: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Month header with navigation
-                MonthHeaderView(
-                    monthData: viewModel.currentMonth,
-                    onPrevious: { viewModel.goToPreviousMonth() },
-                    onNext: { viewModel.goToNextMonth() },
-                    onToday: { viewModel.goToToday() }
-                )
-                .padding(.bottom, 16)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Month header with navigation
+                    MonthHeaderView(
+                        monthData: viewModel.currentMonth,
+                        onPrevious: { viewModel.goToPreviousMonth() },
+                        onNext: { viewModel.goToNextMonth() },
+                        onToday: { viewModel.goToToday() }
+                    )
+                    .padding(.bottom, 16)
 
-                // Day of week labels
-                DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
-                    .padding(.bottom, 8)
+                    // Day of week labels
+                    DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
+                        .padding(.bottom, 8)
 
-                // Calendar grid
-                ZStack {
-                    LazyVGrid(columns: columns, spacing: 4) {
-                        ForEach(viewModel.currentMonth.days) { day in
-                            DayCell(
-                                calendarDay: day,
-                                isToday: viewModel.isToday(day.date)
-                            )
-                            .onTapGesture {
-                                handleDayTap(day)
+                    // Calendar grid with size-appropriate constraints
+                    ZStack {
+                        LazyVGrid(columns: columns, spacing: 4) {
+                            ForEach(viewModel.currentMonth.days) { day in
+                                DayCell(
+                                    calendarDay: day,
+                                    isToday: viewModel.isToday(day.date)
+                                )
+                                .onTapGesture {
+                                    handleDayTap(day)
+                                }
                             }
                         }
-                    }
-                    .padding(.horizontal)
+                        .padding(.horizontal)
+                        .frame(maxWidth: min(geometry.size.width, 800))
 
-                    // Loading indicator
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .cornerRadius(10)
+                        // Loading indicator
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .padding()
+                                .background(Color(.systemBackground).opacity(0.8))
+                                .cornerRadius(10)
+                        }
                     }
+
+                    Spacer(minLength: 20)
                 }
-
-                Spacer(minLength: 20)
+                .padding(.top)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.top)
-        }
-        .refreshable {
-            await refreshCalendar()
+            .refreshable {
+                await refreshCalendar()
+            }
         }
     }
 
