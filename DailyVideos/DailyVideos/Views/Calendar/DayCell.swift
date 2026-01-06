@@ -9,40 +9,43 @@ struct DayCell: View {
     @State private var isPressed = false
 
     var body: some View {
-        ZStack {
-            // Background with thumbnail or plain color
-            if let thumbnail = thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .clipped()
-                    .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            } else {
-                backgroundColor
-            }
+        GeometryReader { geometry in
+            ZStack {
+                // Background with thumbnail or plain color
+                if let thumbnail = thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                        .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else {
+                    backgroundColor
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                }
 
-            // Gradient overlay for better text visibility
-            if thumbnail != nil {
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]),
-                    startPoint: .top,
-                    endPoint: .center
-                )
-            }
+                // Gradient overlay for better text visibility
+                if thumbnail != nil {
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]),
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                }
 
-            // Day number overlay
-            VStack {
-                HStack {
-                    Text("\(calendarDay.day)")
-                        .font(.system(size: 14, weight: isToday ? .bold : .semibold))
-                        .foregroundColor(thumbnail != nil ? .white : textColor)
-                        .shadow(radius: thumbnail != nil ? 2 : 0)
-                        .padding(4)
+                // Day number overlay
+                VStack {
+                    HStack {
+                        Text("\(calendarDay.day)")
+                            .font(.system(size: 14, weight: isToday ? .bold : .semibold))
+                            .foregroundColor(thumbnail != nil ? .white : textColor)
+                            .shadow(radius: thumbnail != nil ? 2 : 0)
+                            .padding(4)
+                        Spacer()
+                    }
                     Spacer()
                 }
-                Spacer()
             }
         }
         .frame(height: 60)
@@ -53,6 +56,7 @@ struct DayCell: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(borderColor, lineWidth: isToday ? 2 : 0)
         )
+        .clipped()
         .scaleEffect(isPressed ? 0.95 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
         .animation(.easeInOut(duration: 0.3), value: thumbnail != nil)
