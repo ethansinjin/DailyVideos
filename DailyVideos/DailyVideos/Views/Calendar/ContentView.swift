@@ -25,12 +25,48 @@ struct ContentView: View {
                     calendarView
                 }
             }
+            .navigationTitle(viewModel.currentMonth.displayString)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { viewModel.goToPreviousMonth() }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.blue)
+                    }
+                }
+
+                ToolbarItem(placement: .principal) {
+                    Button(action: { viewModel.goToToday() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar.circle.fill")
+                                .font(.caption)
+                            Text("Today")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background {
+                            Capsule()
+                                .fill(.blue.gradient)
+                                .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 1)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gear")
-                            .foregroundColor(.primary)
+                    HStack(spacing: 12) {
+                        Button(action: { viewModel.goToNextMonth() }) {
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.blue)
+                        }
+
+                        Button(action: { showingSettings = true }) {
+                            Image(systemName: "gear")
+                                .foregroundColor(.primary)
+                        }
                     }
                 }
             }
@@ -58,19 +94,11 @@ struct ContentView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 0) {
-                    // Month header with navigation
-                    MonthHeaderView(
-                        monthData: viewModel.currentMonth,
-                        onPrevious: { viewModel.goToPreviousMonth() },
-                        onNext: { viewModel.goToNextMonth() },
-                        onToday: { viewModel.goToToday() }
-                    )
-                    .padding(.bottom, 16)
-
                     // Day of week labels and calendar grid container
                     VStack(spacing: 0) {
                         // Day of week labels
                         DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
+                            .padding(.top, 8)
                             .padding(.bottom, 8)
 
                         // Calendar grid with size-appropriate constraints
