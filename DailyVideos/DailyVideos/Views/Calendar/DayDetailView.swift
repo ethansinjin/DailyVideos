@@ -5,10 +5,14 @@ struct DayDetailView: View {
     let mediaItems: [MediaItem]
     let onDismiss: () -> Void
 
-    @State private var showingMediaDetail = false
-    @State private var selectedMediaIndex = 0
+    @State private var selectedMedia: SelectedMedia?
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
+
+    private struct SelectedMedia: Identifiable {
+        let id = UUID()
+        let index: Int
+    }
 
     var body: some View {
         NavigationView {
@@ -56,10 +60,7 @@ struct DayDetailView: View {
                                         .frame(width: geometry.size.width, height: geometry.size.width)
                                         .contentShape(Rectangle())
                                         .onTapGesture {
-                                            selectedMediaIndex = index
-                                            DispatchQueue.main.async {
-                                                showingMediaDetail = true
-                                            }
+                                            selectedMedia = SelectedMedia(index: index)
                                         }
                                 }
                                 .aspectRatio(1, contentMode: .fit)
@@ -79,12 +80,12 @@ struct DayDetailView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingMediaDetail) {
+        .fullScreenCover(item: $selectedMedia) { selected in
             MediaDetailView(
                 mediaItems: mediaItems,
-                initialIndex: selectedMediaIndex,
+                initialIndex: selected.index,
                 onDismiss: {
-                    showingMediaDetail = false
+                    selectedMedia = nil
                 }
             )
         }
