@@ -5,8 +5,11 @@ import SwiftUI
 class CalendarViewModel: ObservableObject {
     @Published var currentMonth: MonthData
     @Published var selectedDay: CalendarDay?
+    @Published var permissionStatus: PermissionStatus = .notDetermined
+    @Published var isLoading: Bool = false
 
     private let calendarManager = CalendarManager.shared
+    private let photoLibraryManager = PhotoLibraryManager.shared
     private var currentYear: Int
     private var currentMonthNumber: Int
 
@@ -15,6 +18,20 @@ class CalendarViewModel: ObservableObject {
         self.currentYear = current.year
         self.currentMonthNumber = current.month
         self.currentMonth = calendarManager.generateMonth(year: currentYear, month: currentMonthNumber)
+
+        // Request permission and load media
+        requestPermissionAndLoadMedia()
+    }
+
+    /// Request photo library permission and load media data
+    func requestPermissionAndLoadMedia() {
+        photoLibraryManager.requestPermission { [weak self] granted in
+            guard let self = self else { return }
+            self.permissionStatus = self.photoLibraryManager.permissionStatus
+            if granted {
+                self.loadCurrentMonth()
+            }
+        }
     }
 
     /// Navigate to the next month
@@ -46,9 +63,34 @@ class CalendarViewModel: ObservableObject {
         selectedDay = day
     }
 
-    /// Load the current month data
+    /// Refresh media data for current month
+    func refreshMediaData() {
+        loadCurrentMonth()
+    }
+
+    /// Load the current month data with media counts
     private func loadCurrentMonth() {
-        currentMonth = calendarManager.generateMonth(year: currentYear, month: currentMonthNumber)
+        isLoading = true
+
+        // Generate calendar structure
+        var monthData = calendarManager.generateMonth(year: currentYear, month: currentMonthNumber)
+
+        // Fetch media counts for the month
+        let mediaCounts = photoLibraryManager.fetchMediaCounts(for: currentYear, month: currentMonthNumber)
+
+        // Update days with media counts
+        let calendar = Calendar.current
+        let updatedDays = monthData.days.map { day -> CalendarDay in
+            var updatedDay = day
+            let dayStart = calendar.startOfDay(for: day.date)
+            updatedDay.mediaCount = mediaCounts[dayStart] ?? 0
+            return updatedDay
+        }
+
+        monthData = MonthData(year: currentYear, month: currentMonthNumber, days: updatedDays)
+        currentMonth = monthData
+
+        isLoading = false
     }
 
     /// Check if a date is today
@@ -59,5 +101,10 @@ class CalendarViewModel: ObservableObject {
     /// Get weekday symbols
     func weekdaySymbols() -> [String] {
         calendarManager.weekdaySymbols()
+    }
+
+    /// Get media items for a specific day
+    func getMediaItems(for day: CalendarDay) -> [MediaItem] {
+        photoLibraryManager.fetchMedia(for: day.date)
     }
 }

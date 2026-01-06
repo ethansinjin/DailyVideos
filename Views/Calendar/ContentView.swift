@@ -6,6 +6,18 @@ struct ContentView: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
     var body: some View {
+        Group {
+            if viewModel.permissionStatus == .denied {
+                // Show permission request view
+                PermissionRequestView()
+            } else {
+                // Show calendar
+                calendarView
+            }
+        }
+    }
+
+    private var calendarView: some View {
         VStack(spacing: 0) {
             // Month header with navigation
             MonthHeaderView(
@@ -21,18 +33,29 @@ struct ContentView: View {
                 .padding(.bottom, 8)
 
             // Calendar grid
-            LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(viewModel.currentMonth.days) { day in
-                    DayCell(
-                        calendarDay: day,
-                        isToday: viewModel.isToday(day.date)
-                    )
-                    .onTapGesture {
-                        viewModel.selectDay(day)
+            ZStack {
+                LazyVGrid(columns: columns, spacing: 4) {
+                    ForEach(viewModel.currentMonth.days) { day in
+                        DayCell(
+                            calendarDay: day,
+                            isToday: viewModel.isToday(day.date)
+                        )
+                        .onTapGesture {
+                            viewModel.selectDay(day)
+                        }
                     }
                 }
+                .padding(.horizontal)
+
+                // Loading indicator
+                if viewModel.isLoading {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .padding()
+                        .background(Color(.systemBackground).opacity(0.8))
+                        .cornerRadius(10)
+                }
             }
-            .padding(.horizontal)
 
             Spacer()
         }
