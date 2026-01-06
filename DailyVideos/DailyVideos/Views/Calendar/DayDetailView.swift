@@ -54,13 +54,16 @@ struct DayDetailView: View {
                                 GeometryReader { geometry in
                                     MediaThumbnailView(mediaItem: item)
                                         .frame(width: geometry.size.width, height: geometry.size.width)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            selectedMediaIndex = index
+                                            DispatchQueue.main.async {
+                                                showingMediaDetail = true
+                                            }
+                                        }
                                 }
                                 .aspectRatio(1, contentMode: .fit)
                                 .clipped()
-                                .onTapGesture {
-                                    selectedMediaIndex = index
-                                    showingMediaDetail = true
-                                }
                             }
                         }
                         .padding()
