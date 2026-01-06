@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()
     @State private var selectedDayDetail: DayDetail?
     @State private var showingSettings = false
+    @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
@@ -28,42 +29,95 @@ struct ContentView: View {
             .navigationTitle(viewModel.currentMonth.displayString)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { viewModel.goToPreviousMonth() }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.blue)
-                    }
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        Button(action: { viewModel.goToToday() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "calendar.circle.fill")
-                                    .font(.caption)
-                                Text("Today")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background {
-                                Capsule()
-                                    .fill(.blue.gradient)
-                                    .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                            }
-                        }
-                        .buttonStyle(.plain)
-
-                        Button(action: { viewModel.goToNextMonth() }) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.blue)
-                        }
-
+                if navigationControlsPosition == .bottom {
+                    // Bottom toolbar mode - settings only in top bar
+                    ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: { showingSettings = true }) {
                             Image(systemName: "gear")
                                 .foregroundColor(.primary)
+                        }
+                    }
+
+                    ToolbarItem(placement: .bottomBar) {
+                        HStack(spacing: 20) {
+                            Button(action: { viewModel.goToPreviousMonth() }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(.plain)
+
+                            Spacer()
+
+                            Button(action: { viewModel.goToToday() }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "calendar.circle.fill")
+                                        .font(.subheadline)
+                                    Text("Today")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background {
+                                    Capsule()
+                                        .fill(.blue.gradient)
+                                        .shadow(color: .blue.opacity(0.3), radius: 4, x: 0, y: 2)
+                                }
+                            }
+                            .buttonStyle(.plain)
+
+                            Spacer()
+
+                            Button(action: { viewModel.goToNextMonth() }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                } else {
+                    // Top navigation bar mode - all controls in top bar
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: { viewModel.goToPreviousMonth() }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.blue)
+                        }
+                    }
+
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack(spacing: 12) {
+                            Button(action: { viewModel.goToToday() }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "calendar.circle.fill")
+                                        .font(.caption)
+                                    Text("Today")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background {
+                                    Capsule()
+                                        .fill(.blue.gradient)
+                                        .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 1)
+                                }
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(action: { viewModel.goToNextMonth() }) {
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.blue)
+                            }
+
+                            Button(action: { showingSettings = true }) {
+                                Image(systemName: "gear")
+                                    .foregroundColor(.primary)
+                            }
                         }
                     }
                 }

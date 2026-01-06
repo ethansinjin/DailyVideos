@@ -6,10 +6,26 @@ struct SettingsView: View {
     @State private var notificationsEnabled = NotificationManager.shared.areNotificationsEnabled
     @State private var notificationTime = NotificationManager.shared.notificationTime
     @State private var showingPermissionAlert = false
+    @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     var body: some View {
         NavigationStack {
             List {
+                // Appearance Section
+                Section {
+                    Picker("Navigation Controls", selection: $navigationControlsPosition) {
+                        Label("Bottom Toolbar", systemImage: "rectangle.bottomthird.inset.filled")
+                            .tag(NavigationControlsPosition.bottom)
+                        Label("Top Navigation Bar", systemImage: "rectangle.topthird.inset.filled")
+                            .tag(NavigationControlsPosition.top)
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text("Appearance")
+                } footer: {
+                    Text("Choose where month navigation controls appear.")
+                }
+
                 // Notifications Section
                 Section {
                     Toggle(isOn: $notificationsEnabled) {
@@ -135,6 +151,13 @@ struct SettingsView: View {
             UIApplication.shared.open(settingsUrl)
         }
     }
+}
+
+// MARK: - Navigation Controls Position
+
+enum NavigationControlsPosition: String, CaseIterable {
+    case bottom = "bottom"
+    case top = "top"
 }
 
 #Preview {
