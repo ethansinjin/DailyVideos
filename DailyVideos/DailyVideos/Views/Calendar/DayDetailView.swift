@@ -51,12 +51,16 @@ struct DayDetailView: View {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(Array(mediaItems.enumerated()), id: \.element.id) { index, item in
-                                MediaThumbnailView(mediaItem: item)
-                                    .aspectRatio(1, contentMode: .fill)
-                                    .onTapGesture {
-                                        selectedMediaIndex = index
-                                        showingMediaDetail = true
-                                    }
+                                GeometryReader { geometry in
+                                    MediaThumbnailView(mediaItem: item)
+                                        .frame(width: geometry.size.width, height: geometry.size.width)
+                                }
+                                .aspectRatio(1, contentMode: .fit)
+                                .clipped()
+                                .onTapGesture {
+                                    selectedMediaIndex = index
+                                    showingMediaDetail = true
+                                }
                             }
                         }
                         .padding()

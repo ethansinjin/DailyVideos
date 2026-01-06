@@ -6,43 +6,49 @@ struct MediaThumbnailView: View {
     @State private var isLoading = true
 
     var body: some View {
-        ZStack {
-            if let thumbnail = thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .clipped()
-            } else if isLoading {
-                Color.gray.opacity(0.2)
-                ProgressView()
-            } else {
-                Color.gray.opacity(0.2)
-                Image(systemName: "photo")
-                    .foregroundColor(.gray)
-            }
-
-            // Overlay for media type
-            VStack {
-                Spacer()
-                HStack {
-                    // Media type badge
-                    mediaBadge
-                    Spacer()
-                    // Duration for videos
-                    if let duration = mediaItem.duration {
-                        Text(formatDuration(duration))
-                            .font(.caption2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(4)
-                            .background(Color.black.opacity(0.7))
-                            .cornerRadius(4)
-                    }
+        GeometryReader { geometry in
+            ZStack {
+                if let thumbnail = thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                } else if isLoading {
+                    Color.gray.opacity(0.2)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                    ProgressView()
+                } else {
+                    Color.gray.opacity(0.2)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                    Image(systemName: "photo")
+                        .foregroundColor(.gray)
                 }
-                .padding(6)
+
+                // Overlay for media type
+                VStack {
+                    Spacer()
+                    HStack {
+                        // Media type badge
+                        mediaBadge
+                        Spacer()
+                        // Duration for videos
+                        if let duration = mediaItem.duration {
+                            Text(formatDuration(duration))
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(4)
+                                .background(Color.black.opacity(0.7))
+                                .cornerRadius(4)
+                        }
+                    }
+                    .padding(6)
+                }
             }
         }
         .cornerRadius(8)
+        .clipped()
         .onAppear {
             loadThumbnail()
         }
