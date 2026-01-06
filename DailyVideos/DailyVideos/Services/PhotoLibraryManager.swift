@@ -1,6 +1,7 @@
 import Foundation
 import Photos
 import UIKit
+import Combine
 
 /// Singleton service for accessing and managing the photo library
 class PhotoLibraryManager: ObservableObject {
