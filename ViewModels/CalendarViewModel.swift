@@ -83,15 +83,17 @@ class CalendarViewModel: ObservableObject {
             // Generate calendar structure
             var monthData = self.calendarManager.generateMonth(year: year, month: month)
 
-            // Fetch media counts for the month
-            let mediaCounts = self.photoLibraryManager.fetchMediaCounts(for: year, month: month)
+            // Fetch media info for the month (counts + representative assets)
+            let mediaInfo = self.photoLibraryManager.fetchMediaInfo(for: year, month: month)
 
-            // Update days with media counts
+            // Update days with media counts and representative assets
             let calendar = Calendar.current
             let updatedDays = monthData.days.map { day -> CalendarDay in
                 var updatedDay = day
                 let dayStart = calendar.startOfDay(for: day.date)
-                updatedDay.mediaCount = mediaCounts[dayStart] ?? 0
+                let info = mediaInfo[dayStart]
+                updatedDay.mediaCount = info?.count ?? 0
+                updatedDay.representativeAssetIdentifier = info?.representativeAssetIdentifier
                 return updatedDay
             }
 

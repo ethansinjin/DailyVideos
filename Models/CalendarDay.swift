@@ -9,8 +9,9 @@ struct CalendarDay: Identifiable {
     let day: Int
     let isInCurrentMonth: Bool
 
-    // Media-related properties (to be populated in Phase 2)
+    // Media-related properties
     var mediaCount: Int = 0
+    var representativeAssetIdentifier: String? = nil
 
     var hasMedia: Bool {
         mediaCount > 0

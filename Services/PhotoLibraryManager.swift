@@ -98,12 +98,18 @@ class PhotoLibraryManager: ObservableObject {
         return mediaItems.sorted { ($0.date) > ($1.date) }
     }
 
+    /// Data structure for day media info
+    struct DayMediaInfo {
+        let count: Int
+        let representativeAssetIdentifier: String?
+    }
+
     /// Fetch media for an entire month and organize by day
     /// - Parameters:
     ///   - year: The year
     ///   - month: The month (1-12)
-    /// - Returns: Dictionary mapping dates to media counts
-    func fetchMediaCounts(for year: Int, month: Int) -> [Date: Int] {
+    /// - Returns: Dictionary mapping dates to media info (count and representative asset)
+    func fetchMediaInfo(for year: Int, month: Int) -> [Date: DayMediaInfo] {
         let calendar = Calendar.current
         guard let startOfMonth = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
               let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth),
@@ -117,6 +123,7 @@ class PhotoLibraryManager: ObservableObject {
             startOfMonth as NSDate,
             endOfMonthPlusOne as NSDate
         )
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
 
         // Fetch videos
         let videoAssets = PHAsset.fetchAssets(with: .video, options: options)
@@ -129,27 +136,59 @@ class PhotoLibraryManager: ObservableObject {
             endOfMonthPlusOne as NSDate,
             PHAssetMediaSubtype.photoLive.rawValue
         )
+        imageOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         let livePhotoAssets = PHAsset.fetchAssets(with: .image, options: imageOptions)
 
-        var mediaCounts: [Date: Int] = [:]
+        var mediaInfo: [Date: DayMediaInfo] = [:]
+        var representativeAssets: [Date: String] = [:]
 
-        // Count videos by day
+        // Process videos by day
         videoAssets.enumerateObjects { asset, _, _ in
             if let creationDate = asset.creationDate {
                 let dayStart = calendar.startOfDay(for: creationDate)
-                mediaCounts[dayStart, default: 0] += 1
+                let currentCount = mediaInfo[dayStart]?.count ?? 0
+
+                // Store first asset as representative
+                if representativeAssets[dayStart] == nil {
+                    representativeAssets[dayStart] = asset.localIdentifier
+                }
+
+                mediaInfo[dayStart] = DayMediaInfo(
+                    count: currentCount + 1,
+                    representativeAssetIdentifier: representativeAssets[dayStart]
+                )
             }
         }
 
-        // Count Live Photos by day
+        // Process Live Photos by day
         livePhotoAssets.enumerateObjects { asset, _, _ in
             if let creationDate = asset.creationDate {
                 let dayStart = calendar.startOfDay(for: creationDate)
-                mediaCounts[dayStart, default: 0] += 1
+                let currentCount = mediaInfo[dayStart]?.count ?? 0
+
+                // Store first asset as representative if none exists
+                if representativeAssets[dayStart] == nil {
+                    representativeAssets[dayStart] = asset.localIdentifier
+                }
+
+                mediaInfo[dayStart] = DayMediaInfo(
+                    count: currentCount + 1,
+                    representativeAssetIdentifier: representativeAssets[dayStart]
+                )
             }
         }
 
-        return mediaCounts
+        return mediaInfo
+    }
+
+    /// Fetch media for an entire month and organize by day (count only)
+    /// - Parameters:
+    ///   - year: The year
+    ///   - month: The month (1-12)
+    /// - Returns: Dictionary mapping dates to media counts
+    func fetchMediaCounts(for year: Int, month: Int) -> [Date: Int] {
+        let mediaInfo = fetchMediaInfo(for: year, month: month)
+        return mediaInfo.mapValues { $0.count }
     }
 
     // MARK: - Thumbnails
@@ -186,6 +225,46 @@ class PhotoLibraryManager: ObservableObject {
             if let image = image {
                 // Cache the thumbnail
                 self?.thumbnailCache[mediaItem.assetIdentifier] = image
+            }
+            DispatchQueue.main.async {
+                completion(image)
+            }
+        }
+    }
+
+    /// Get thumbnail from asset identifier
+    /// - Parameters:
+    ///   - assetIdentifier: The PHAsset local identifier
+    ///   - size: The desired size of the thumbnail
+    ///   - completion: Completion handler with the thumbnail image
+    func getThumbnail(for assetIdentifier: String, size: CGSize, completion: @escaping (UIImage?) -> Void) {
+        // Check cache first
+        if let cachedImage = thumbnailCache[assetIdentifier] {
+            completion(cachedImage)
+            return
+        }
+
+        // Fetch asset
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
+        guard let asset = result.firstObject else {
+            completion(nil)
+            return
+        }
+
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .opportunistic
+        options.isNetworkAccessAllowed = true
+        options.isSynchronous = false
+
+        imageManager.requestImage(
+            for: asset,
+            targetSize: size,
+            contentMode: .aspectFill,
+            options: options
+        ) { [weak self] image, _ in
+            if let image = image {
+                // Cache the thumbnail
+                self?.thumbnailCache[assetIdentifier] = image
             }
             DispatchQueue.main.async {
                 completion(image)

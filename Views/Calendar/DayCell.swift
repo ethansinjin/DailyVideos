@@ -4,21 +4,43 @@ struct DayCell: View {
     let calendarDay: CalendarDay
     let isToday: Bool
 
-    var body: some View {
-        VStack(spacing: 4) {
-            // Day number
-            Text("\(calendarDay.day)")
-                .font(.system(size: 16, weight: isToday ? .bold : .regular))
-                .foregroundColor(textColor)
+    @State private var thumbnail: UIImage?
+    @State private var isLoadingThumbnail = false
 
-            // Media indicator (placeholder for Phase 2)
-            if calendarDay.hasMedia {
-                Circle()
-                    .fill(Color.blue)
-                    .frame(width: 6, height: 6)
+    var body: some View {
+        ZStack {
+            // Background with thumbnail or plain color
+            if let thumbnail = thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+                    .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
             } else {
+                backgroundColor
+            }
+
+            // Gradient overlay for better text visibility
+            if thumbnail != nil {
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.black.opacity(0.4), Color.clear]),
+                    startPoint: .top,
+                    endPoint: .center
+                )
+            }
+
+            // Day number overlay
+            VStack {
+                HStack {
+                    Text("\(calendarDay.day)")
+                        .font(.system(size: 14, weight: isToday ? .bold : .semibold))
+                        .foregroundColor(thumbnail != nil ? .white : textColor)
+                        .shadow(radius: thumbnail != nil ? 2 : 0)
+                        .padding(4)
+                    Spacer()
+                }
                 Spacer()
-                    .frame(height: 6)
             }
         }
         .frame(height: 60)
@@ -29,6 +51,12 @@ struct DayCell: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(borderColor, lineWidth: isToday ? 2 : 0)
         )
+        .onAppear {
+            loadThumbnailIfNeeded()
+        }
+        .onChange(of: calendarDay.representativeAssetIdentifier) { _ in
+            loadThumbnailIfNeeded()
+        }
     }
 
     private var textColor: Color {
@@ -47,5 +75,20 @@ struct DayCell: View {
 
     private var borderColor: Color {
         isToday ? .blue : .clear
+    }
+
+    private func loadThumbnailIfNeeded() {
+        guard let assetIdentifier = calendarDay.representativeAssetIdentifier,
+              !isLoadingThumbnail else {
+            return
+        }
+
+        isLoadingThumbnail = true
+        let size = CGSize(width: 150, height: 150)
+
+        PhotoLibraryManager.shared.getThumbnail(for: assetIdentifier, size: size) { image in
+            self.thumbnail = image
+            self.isLoadingThumbnail = false
+        }
     }
 }
