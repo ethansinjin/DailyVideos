@@ -6,6 +6,9 @@ struct DayDetailView: View {
     let onDismiss: () -> Void
 
     @State private var selectedMedia: SelectedMedia?
+    @State private var preferredAsset: String?
+    @State private var showToast = false
+    @State private var toastMessage = ""
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private var columns: [GridItem] {
@@ -16,6 +19,48 @@ struct DayDetailView: View {
     private struct SelectedMedia: Identifiable {
         let id = UUID()
         let index: Int
+    }
+
+    /// Get the preferred media asset identifier for this day
+    private var preferredAssetIdentifier: String? {
+        // Use local state if set, otherwise compute from preferences
+        if let preferred = preferredAsset {
+            return preferred
+        }
+
+        // First check user preference
+        if let preferred = PreferencesManager.shared.getPreferredMedia(for: day.date) {
+            // Verify it exists in current media items
+            if mediaItems.contains(where: { $0.assetIdentifier == preferred }) {
+                return preferred
+            }
+        }
+        // Fall back to smart default
+        return PhotoLibraryManager.shared.selectDefaultRepresentativeMedia(from: mediaItems)
+    }
+
+    /// Handle long press on a media item to set it as preferred
+    private func handleLongPress(on item: MediaItem) {
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        // Save preference
+        PreferencesManager.shared.setPreferredMedia(for: day.date, assetIdentifier: item.assetIdentifier)
+
+        // Update local state
+        preferredAsset = item.assetIdentifier
+
+        // Show toast
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        toastMessage = "Pinned as preferred for \(formatter.string(from: day.date))"
+        showToast = true
+
+        // Hide toast after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showToast = false
+        }
     }
 
     var body: some View {
@@ -60,12 +105,18 @@ struct DayDetailView: View {
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(Array(mediaItems.enumerated()), id: \.element.id) { index, item in
                                 GeometryReader { geometry in
-                                    MediaThumbnailView(mediaItem: item)
-                                        .frame(width: geometry.size.width, height: geometry.size.width)
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            selectedMedia = SelectedMedia(index: index)
-                                        }
+                                    MediaThumbnailView(
+                                        mediaItem: item,
+                                        showPinBadge: item.assetIdentifier == preferredAssetIdentifier
+                                    )
+                                    .frame(width: geometry.size.width, height: geometry.size.width)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedMedia = SelectedMedia(index: index)
+                                    }
+                                    .onLongPressGesture {
+                                        handleLongPress(on: item)
+                                    }
                                 }
                                 .aspectRatio(1, contentMode: .fit)
                                 .clipped()
@@ -83,6 +134,25 @@ struct DayDetailView: View {
                     }
                 }
             }
+            .overlay(
+                // Toast notification
+                VStack {
+                    if showToast {
+                        Text(toastMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.8))
+                            .cornerRadius(10)
+                            .shadow(radius: 10)
+                            .padding(.top, 60)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showToast)
+                    }
+                    Spacer()
+                }
+            )
         }
         .fullScreenCover(item: $selectedMedia) { selected in
             MediaDetailView(

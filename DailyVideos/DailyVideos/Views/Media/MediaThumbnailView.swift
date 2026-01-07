@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MediaThumbnailView: View {
     let mediaItem: MediaItem
+    var showPinBadge: Bool = false
     @State private var thumbnail: UIImage?
     @State private var isLoading = true
 
@@ -23,6 +24,24 @@ struct MediaThumbnailView: View {
                         .frame(width: geometry.size.width, height: geometry.size.height)
                     Image(systemName: "photo")
                         .foregroundColor(.gray)
+                }
+
+                // Pin badge in top-right corner
+                if showPinBadge {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "pin.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.blue.opacity(0.9))
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        }
+                        Spacer()
+                    }
+                    .padding(6)
                 }
 
                 // Overlay for media type
