@@ -29,6 +29,7 @@ class VideoGenerationViewModel: ObservableObject {
 
     private let selectionService = MediaSelectionService.shared
     private let compositionService = VideoCompositionService.shared
+    private let exportService = VideoExportService.shared
 
     // MARK: - Initialization
 
@@ -172,24 +173,41 @@ class VideoGenerationViewModel: ObservableObject {
         showingPreview = true
     }
 
-    // MARK: - Export (Placeholder)
+    // MARK: - Export
 
     /// Save video to Photos library
-    /// Note: This is a placeholder. Full implementation will be in Phase 8.
     func saveVideo() async {
-        guard generatedVideoURL != nil else { return }
+        guard let videoURL = generatedVideoURL else { return }
 
-        // TODO: Phase 8 - Implement actual save to Photos library
-        print("📹 Saving video to Photos library (placeholder)")
+        error = nil
+
+        do {
+            try await exportService.saveToPhotoLibrary(videoURL)
+            // Success - could add a success message to UI
+            print("✅ Video saved to Photos library successfully")
+        } catch let exportError as VideoExportError {
+            error = exportError
+        } catch {
+            self.error = error
+        }
     }
 
-    /// Share video via system share sheet
-    /// Note: This is a placeholder. Full implementation will be in Phase 8.
-    func shareVideo() {
-        guard generatedVideoURL != nil else { return }
+    /// Get share items for system share sheet
+    /// - Returns: Array of items to share
+    func getShareItems() -> [Any] {
+        guard let videoURL = generatedVideoURL else { return [] }
+        return exportService.getShareItems(for: videoURL)
+    }
 
-        // TODO: Phase 8 - Implement actual share sheet
-        print("📹 Sharing video (placeholder)")
+    /// Get file size of generated video
+    /// - Returns: Formatted file size string, or nil if not available
+    func getVideoFileSize() async -> String? {
+        guard let videoURL = generatedVideoURL else { return nil }
+
+        if let bytes = await exportService.getFileSize(of: videoURL) {
+            return await exportService.formatFileSize(bytes)
+        }
+        return nil
     }
 
     // MARK: - Settings
