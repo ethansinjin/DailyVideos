@@ -111,7 +111,7 @@ class PhotoLibraryManager: ObservableObject {
             startOfMonth as NSDate,
             endOfMonthPlusOne as NSDate
         )
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
 
         // Fetch videos
         let videoAssets = PHAsset.fetchAssets(with: .video, options: options)
@@ -124,46 +124,55 @@ class PhotoLibraryManager: ObservableObject {
             endOfMonthPlusOne as NSDate,
             PHAssetMediaSubtype.photoLive.rawValue
         )
-        imageOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        imageOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         let livePhotoAssets = PHAsset.fetchAssets(with: .image, options: imageOptions)
 
-        var mediaInfo: [Date: DayMediaInfo] = [:]
-        var representativeAssets: [Date: String] = [:]
+        // Group assets by day
+        var assetsByDay: [Date: [PHAsset]] = [:]
 
-        // Process videos by day
+        // Collect videos by day
         videoAssets.enumerateObjects { asset, _, _ in
             if let creationDate = asset.creationDate {
                 let dayStart = calendar.startOfDay(for: creationDate)
-                let currentCount = mediaInfo[dayStart]?.count ?? 0
-
-                // Store first asset as representative
-                if representativeAssets[dayStart] == nil {
-                    representativeAssets[dayStart] = asset.localIdentifier
-                }
-
-                mediaInfo[dayStart] = DayMediaInfo(
-                    count: currentCount + 1,
-                    representativeAssetIdentifier: representativeAssets[dayStart]
-                )
+                assetsByDay[dayStart, default: []].append(asset)
             }
         }
 
-        // Process Live Photos by day
+        // Collect Live Photos by day
         livePhotoAssets.enumerateObjects { asset, _, _ in
             if let creationDate = asset.creationDate {
                 let dayStart = calendar.startOfDay(for: creationDate)
-                let currentCount = mediaInfo[dayStart]?.count ?? 0
-
-                // Store first asset as representative if none exists
-                if representativeAssets[dayStart] == nil {
-                    representativeAssets[dayStart] = asset.localIdentifier
-                }
-
-                mediaInfo[dayStart] = DayMediaInfo(
-                    count: currentCount + 1,
-                    representativeAssetIdentifier: representativeAssets[dayStart]
-                )
+                assetsByDay[dayStart, default: []].append(asset)
             }
+        }
+
+        // Build media info using preferences or smart default selection
+        var mediaInfo: [Date: DayMediaInfo] = [:]
+
+        for (day, assets) in assetsByDay {
+            var representativeAsset: String?
+
+            // First, check if user has a preference for this day
+            if let preferredAsset = PreferencesManager.shared.getPreferredMedia(for: day) {
+                // Verify the preferred asset still exists in this day's assets
+                let assetExists = assets.contains { $0.localIdentifier == preferredAsset }
+                if assetExists {
+                    representativeAsset = preferredAsset
+                } else {
+                    // Preferred asset was deleted, remove the stale preference
+                    PreferencesManager.shared.removePreferredMedia(for: day)
+                    // Fall back to smart default
+                    representativeAsset = selectDefaultRepresentativeAsset(from: assets)
+                }
+            } else {
+                // No preference exists, use smart default
+                representativeAsset = selectDefaultRepresentativeAsset(from: assets)
+            }
+
+            mediaInfo[day] = DayMediaInfo(
+                count: assets.count,
+                representativeAssetIdentifier: representativeAsset
+            )
         }
 
         return mediaInfo
@@ -263,5 +272,57 @@ class PhotoLibraryManager: ObservableObject {
     /// Clear the thumbnail cache (useful for memory management)
     func clearCache() {
         thumbnailCache.removeAll()
+    }
+
+    // MARK: - Smart Default Selection
+
+    /// Select the representative media from a collection of assets using smart defaults
+    /// Priority: Videos first -> Live Photos second -> Chronological first
+    /// - Parameter assets: Array of PHAssets
+    /// - Returns: Asset identifier of the representative asset, or nil if no assets
+    func selectDefaultRepresentativeAsset(from assets: [PHAsset]) -> String? {
+        guard !assets.isEmpty else { return nil }
+
+        // Sort assets by creation date (oldest first for chronological priority)
+        let sortedAssets = assets.sorted {
+            ($0.creationDate ?? Date.distantPast) < ($1.creationDate ?? Date.distantPast)
+        }
+
+        // Priority 1: Find first video
+        if let video = sortedAssets.first(where: { $0.mediaType == .video }) {
+            return video.localIdentifier
+        }
+
+        // Priority 2: Find first live photo
+        if let livePhoto = sortedAssets.first(where: { $0.mediaSubtypes.contains(.photoLive) }) {
+            return livePhoto.localIdentifier
+        }
+
+        // Priority 3: Return first asset chronologically
+        return sortedAssets.first?.localIdentifier
+    }
+
+    /// Select the representative media from MediaItems using smart defaults
+    /// Priority: Videos first -> Live Photos second -> Chronological first
+    /// - Parameter items: Array of MediaItems
+    /// - Returns: Asset identifier of the representative item, or nil if no items
+    func selectDefaultRepresentativeMedia(from items: [MediaItem]) -> String? {
+        guard !items.isEmpty else { return nil }
+
+        // Sort items by creation date (oldest first for chronological priority)
+        let sortedItems = items.sorted { $0.date < $1.date }
+
+        // Priority 1: Find first video
+        if let video = sortedItems.first(where: { $0.mediaType == .video }) {
+            return video.assetIdentifier
+        }
+
+        // Priority 2: Find first live photo
+        if let livePhoto = sortedItems.first(where: { $0.mediaType == .livePhoto }) {
+            return livePhoto.assetIdentifier
+        }
+
+        // Priority 3: Return first item chronologically
+        return sortedItems.first?.assetIdentifier
     }
 }
