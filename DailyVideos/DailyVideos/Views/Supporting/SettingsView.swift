@@ -6,6 +6,9 @@ struct SettingsView: View {
     @State private var notificationsEnabled = NotificationManager.shared.areNotificationsEnabled
     @State private var notificationTime = NotificationManager.shared.notificationTime
     @State private var showingPermissionAlert = false
+    @State private var showingClearAllAlert = false
+    @State private var showingClearOneYearAlert = false
+    @State private var showingClearTwoYearsAlert = false
     @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     var body: some View {
@@ -50,6 +53,31 @@ struct SettingsView: View {
                     Text("Notifications")
                 } footer: {
                     Text("Get a daily reminder to capture your memories.")
+                }
+
+                // Preferred Media Section
+                Section {
+                    Button(role: .destructive) {
+                        showingClearAllAlert = true
+                    } label: {
+                        Label("Clear All Preferences", systemImage: "trash")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearOneYearAlert = true
+                    } label: {
+                        Label("Clear Older Than 1 Year", systemImage: "calendar.badge.minus")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearTwoYearsAlert = true
+                    } label: {
+                        Label("Clear Older Than 2 Years", systemImage: "calendar.badge.minus")
+                    }
+                } header: {
+                    Text("Preferred Media")
+                } footer: {
+                    Text("Remove saved preferences for which photo or video represents each day in the calendar. Current count: \(PreferencesManager.shared.getPreferenceCount())")
                 }
 
                 // About Section
@@ -100,6 +128,30 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("Please enable notifications in Settings to receive daily reminders.")
+            }
+            .alert("Clear All Preferences?", isPresented: $showingClearAllAlert) {
+                Button("Clear All", role: .destructive) {
+                    PreferencesManager.shared.cleanupPreferences(olderThan: .all)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove all saved preferred media selections. This action cannot be undone.")
+            }
+            .alert("Clear Old Preferences?", isPresented: $showingClearOneYearAlert) {
+                Button("Clear", role: .destructive) {
+                    PreferencesManager.shared.cleanupPreferences(olderThan: .olderThanOneYear)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove preferred media selections older than 1 year. This action cannot be undone.")
+            }
+            .alert("Clear Old Preferences?", isPresented: $showingClearTwoYearsAlert) {
+                Button("Clear", role: .destructive) {
+                    PreferencesManager.shared.cleanupPreferences(olderThan: .olderThanTwoYears)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove preferred media selections older than 2 years. This action cannot be undone.")
             }
         }
     }
