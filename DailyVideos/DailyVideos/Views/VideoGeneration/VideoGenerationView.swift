@@ -10,6 +10,7 @@ import SwiftUI
 /// Main view for video generation tab
 struct VideoGenerationView: View {
     @StateObject private var viewModel = VideoGenerationViewModel()
+    @State private var showingShareSheet = false
 
     var body: some View {
         NavigationStack {
@@ -51,6 +52,11 @@ struct VideoGenerationView: View {
             }
             .navigationTitle("Generate Video")
             .navigationBarTitleDisplayMode(.large)
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            if !viewModel.getShareItems().isEmpty {
+                ShareSheet(items: viewModel.getShareItems())
+            }
         }
     }
 
@@ -333,7 +339,7 @@ struct VideoGenerationView: View {
                 .buttonStyle(.bordered)
 
                 Button("Share") {
-                    viewModel.shareVideo()
+                    showingShareSheet = true
                 }
                 .buttonStyle(.bordered)
 
@@ -383,6 +389,25 @@ struct VideoGenerationView: View {
         } else {
             return "\(seconds)s"
         }
+    }
+}
+
+// MARK: - Share Sheet
+
+/// UIKit share sheet wrapper for SwiftUI
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: items,
+            applicationActivities: nil
+        )
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+        // No updates needed
     }
 }
 
