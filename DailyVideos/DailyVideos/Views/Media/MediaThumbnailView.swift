@@ -3,6 +3,8 @@ import SwiftUI
 struct MediaThumbnailView: View {
     let mediaItem: MediaItem
     var showPinBadge: Bool = false
+    var showCrossDatePinBadge: Bool = false
+    var pinSourceDate: Date? = nil
     @State private var thumbnail: UIImage?
     @State private var isLoading = true
 
@@ -26,23 +28,44 @@ struct MediaThumbnailView: View {
                         .foregroundColor(.gray)
                 }
 
-                // Pin badge in top-right corner
-                if showPinBadge {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "pin.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Color.blue.opacity(0.9))
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                        }
+                // Badges in top-right corner
+                VStack(alignment: .trailing, spacing: 4) {
+                    HStack {
                         Spacer()
+                        VStack(alignment: .trailing, spacing: 4) {
+                            // Cross-date pin badge (top priority)
+                            if showCrossDatePinBadge {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "calendar.badge.clock")
+                                        .font(.system(size: 10))
+                                    if let sourceDate = pinSourceDate {
+                                        Text(formatSourceDate(sourceDate))
+                                            .font(.system(size: 10, weight: .semibold))
+                                    }
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.9))
+                                .cornerRadius(8)
+                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                            }
+
+                            // Preferred pin badge (secondary)
+                            if showPinBadge {
+                                Image(systemName: "pin.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white)
+                                    .padding(6)
+                                    .background(Color.blue.opacity(0.9))
+                                    .clipShape(Circle())
+                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                            }
+                        }
                     }
-                    .padding(6)
+                    Spacer()
                 }
+                .padding(6)
 
                 // Overlay for media type
                 VStack {
@@ -105,6 +128,12 @@ struct MediaThumbnailView: View {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    private func formatSourceDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: date)
     }
 }
 
