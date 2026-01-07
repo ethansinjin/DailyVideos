@@ -6,11 +6,40 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		F795F8322F0E8ADB00FE8164 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F7FC9C102F0D502900527172 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F7FC9C172F0D502900527172;
+			remoteInfo = DailyVideos;
+		};
+		F795F8412F0E8AEF00FE8164 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F7FC9C102F0D502900527172 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F7FC9C172F0D502900527172;
+			remoteInfo = DailyVideos;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		F795F82E2F0E8ADB00FE8164 /* DailyVideosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DailyVideosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F795F83B2F0E8AEF00FE8164 /* DailyVideosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DailyVideosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7FC9C182F0D502900527172 /* DailyVideos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DailyVideos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		F795F82F2F0E8ADB00FE8164 /* DailyVideosTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DailyVideosTests;
+			sourceTree = "<group>";
+		};
+		F795F83C2F0E8AEF00FE8164 /* DailyVideosUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DailyVideosUITests;
+			sourceTree = "<group>";
+		};
 		F7FC9C1A2F0D502900527172 /* DailyVideos */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DailyVideos;
@@ -19,6 +48,20 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F795F82B2F0E8ADB00FE8164 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F795F8382F0E8AEF00FE8164 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F7FC9C152F0D502900527172 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -33,6 +76,8 @@
 			isa = PBXGroup;
 			children = (
 				F7FC9C1A2F0D502900527172 /* DailyVideos */,
+				F795F82F2F0E8ADB00FE8164 /* DailyVideosTests */,
+				F795F83C2F0E8AEF00FE8164 /* DailyVideosUITests */,
 				F7FC9C192F0D502900527172 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +86,8 @@
 			isa = PBXGroup;
 			children = (
 				F7FC9C182F0D502900527172 /* DailyVideos.app */,
+				F795F82E2F0E8ADB00FE8164 /* DailyVideosTests.xctest */,
+				F795F83B2F0E8AEF00FE8164 /* DailyVideosUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +95,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F795F82D2F0E8ADB00FE8164 /* DailyVideosTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F795F8362F0E8ADB00FE8164 /* Build configuration list for PBXNativeTarget "DailyVideosTests" */;
+			buildPhases = (
+				F795F82A2F0E8ADB00FE8164 /* Sources */,
+				F795F82B2F0E8ADB00FE8164 /* Frameworks */,
+				F795F82C2F0E8ADB00FE8164 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F795F8332F0E8ADB00FE8164 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F795F82F2F0E8ADB00FE8164 /* DailyVideosTests */,
+			);
+			name = DailyVideosTests;
+			packageProductDependencies = (
+			);
+			productName = DailyVideosTests;
+			productReference = F795F82E2F0E8ADB00FE8164 /* DailyVideosTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F795F83A2F0E8AEF00FE8164 /* DailyVideosUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F795F8432F0E8AEF00FE8164 /* Build configuration list for PBXNativeTarget "DailyVideosUITests" */;
+			buildPhases = (
+				F795F8372F0E8AEF00FE8164 /* Sources */,
+				F795F8382F0E8AEF00FE8164 /* Frameworks */,
+				F795F8392F0E8AEF00FE8164 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F795F8422F0E8AEF00FE8164 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F795F83C2F0E8AEF00FE8164 /* DailyVideosUITests */,
+			);
+			name = DailyVideosUITests;
+			packageProductDependencies = (
+			);
+			productName = DailyVideosUITests;
+			productReference = F795F83B2F0E8AEF00FE8164 /* DailyVideosUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		F7FC9C172F0D502900527172 /* DailyVideos */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F7FC9C252F0D502A00527172 /* Build configuration list for PBXNativeTarget "DailyVideos" */;
@@ -80,6 +173,14 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					F795F82D2F0E8ADB00FE8164 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = F7FC9C172F0D502900527172;
+					};
+					F795F83A2F0E8AEF00FE8164 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = F7FC9C172F0D502900527172;
+					};
 					F7FC9C172F0D502900527172 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -100,11 +201,27 @@
 			projectRoot = "";
 			targets = (
 				F7FC9C172F0D502900527172 /* DailyVideos */,
+				F795F82D2F0E8ADB00FE8164 /* DailyVideosTests */,
+				F795F83A2F0E8AEF00FE8164 /* DailyVideosUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		F795F82C2F0E8ADB00FE8164 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F795F8392F0E8AEF00FE8164 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F7FC9C162F0D502900527172 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +232,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F795F82A2F0E8ADB00FE8164 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F795F8372F0E8AEF00FE8164 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F7FC9C142F0D502900527172 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +255,102 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F795F8332F0E8ADB00FE8164 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F7FC9C172F0D502900527172 /* DailyVideos */;
+			targetProxy = F795F8322F0E8ADB00FE8164 /* PBXContainerItemProxy */;
+		};
+		F795F8422F0E8AEF00FE8164 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F7FC9C172F0D502900527172 /* DailyVideos */;
+			targetProxy = F795F8412F0E8AEF00FE8164 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		F795F8342F0E8ADB00FE8164 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K2P452F89V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ethansinjin.DailyVideosTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DailyVideos.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DailyVideos";
+			};
+			name = Debug;
+		};
+		F795F8352F0E8ADB00FE8164 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K2P452F89V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ethansinjin.DailyVideosTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DailyVideos.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DailyVideos";
+			};
+			name = Release;
+		};
+		F795F8442F0E8AEF00FE8164 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K2P452F89V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ethansinjin.DailyVideosUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DailyVideos;
+			};
+			name = Debug;
+		};
+		F795F8452F0E8AEF00FE8164 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K2P452F89V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ethansinjin.DailyVideosUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DailyVideos;
+			};
+			name = Release;
+		};
 		F7FC9C232F0D502A00527172 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -317,6 +543,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F795F8362F0E8ADB00FE8164 /* Build configuration list for PBXNativeTarget "DailyVideosTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F795F8342F0E8ADB00FE8164 /* Debug */,
+				F795F8352F0E8ADB00FE8164 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F795F8432F0E8AEF00FE8164 /* Build configuration list for PBXNativeTarget "DailyVideosUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F795F8442F0E8AEF00FE8164 /* Debug */,
+				F795F8452F0E8AEF00FE8164 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F7FC9C132F0D502900527172 /* Build configuration list for PBXProject "DailyVideos" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
