@@ -9,6 +9,10 @@ struct SettingsView: View {
     @State private var showingClearAllAlert = false
     @State private var showingClearOneYearAlert = false
     @State private var showingClearTwoYearsAlert = false
+    @State private var showingClearPinsAllAlert = false
+    @State private var showingClearPinsOneYearAlert = false
+    @State private var showingClearPinsTwoYearsAlert = false
+    @State private var showingCleanupOrphanedPinsAlert = false
     @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     var body: some View {
@@ -78,6 +82,37 @@ struct SettingsView: View {
                     Text("Preferred Media")
                 } footer: {
                     Text("Remove saved preferences for which photo or video represents each day in the calendar. Current count: \(PreferencesManager.shared.getPreferenceCount())")
+                }
+
+                // Pinned Media Section
+                Section {
+                    Button {
+                        showingCleanupOrphanedPinsAlert = true
+                    } label: {
+                        Label("Remove Orphaned Pins", systemImage: "arrow.triangle.2.circlepath")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearPinsAllAlert = true
+                    } label: {
+                        Label("Clear All Pins", systemImage: "trash")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearPinsOneYearAlert = true
+                    } label: {
+                        Label("Clear Pins Older Than 1 Year", systemImage: "calendar.badge.minus")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearPinsTwoYearsAlert = true
+                    } label: {
+                        Label("Clear Pins Older Than 2 Years", systemImage: "calendar.badge.minus")
+                    }
+                } header: {
+                    Text("Pinned Media")
+                } footer: {
+                    Text("Manage media pinned from other days. Orphaned pins are those where the original media has been deleted from your library. Current pin count: \(PinnedMediaManager.shared.getPinCount())")
                 }
 
                 // About Section
@@ -152,6 +187,39 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("This will remove preferred media selections older than 2 years. This action cannot be undone.")
+            }
+            .alert("Clear All Pinned Media?", isPresented: $showingClearPinsAllAlert) {
+                Button("Clear All", role: .destructive) {
+                    PinnedMediaManager.shared.cleanupPins(olderThan: .all)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove all media pinned from other days. The original media will remain on their actual dates. This action cannot be undone.")
+            }
+            .alert("Clear Old Pins?", isPresented: $showingClearPinsOneYearAlert) {
+                Button("Clear", role: .destructive) {
+                    PinnedMediaManager.shared.cleanupPins(olderThan: .olderThanOneYear)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove pins older than 1 year. This action cannot be undone.")
+            }
+            .alert("Clear Old Pins?", isPresented: $showingClearPinsTwoYearsAlert) {
+                Button("Clear", role: .destructive) {
+                    PinnedMediaManager.shared.cleanupPins(olderThan: .olderThanTwoYears)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove pins older than 2 years. This action cannot be undone.")
+            }
+            .alert("Remove Orphaned Pins?", isPresented: $showingCleanupOrphanedPinsAlert) {
+                Button("Remove", role: .destructive) {
+                    let count = PinnedMediaManager.shared.cleanupOrphanedPins()
+                    print("Removed \(count) orphaned pins")
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will remove pins for media that no longer exists in your photo library. This action cannot be undone.")
             }
         }
     }

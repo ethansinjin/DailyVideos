@@ -108,4 +108,42 @@ class CalendarManager {
     func weekdaySymbols() -> [String] {
         calendar.shortWeekdaySymbols
     }
+
+    // MARK: - Pin Selection Helpers
+
+    /// Get date range for pin selection (e.g., ±N days from target)
+    /// - Parameters:
+    ///   - date: The center date
+    ///   - dayRadius: Number of days in each direction (default: 7)
+    /// - Returns: Tuple of (start date, end date)
+    func getPinSelectionDateRange(around date: Date, dayRadius: Int = 7) -> (start: Date, end: Date) {
+        let centerDate = calendar.startOfDay(for: date)
+        let startDate = calendar.date(byAdding: .day, value: -dayRadius, to: centerDate) ?? centerDate
+        let endDate = calendar.date(byAdding: .day, value: dayRadius, to: centerDate) ?? centerDate
+        return (startDate, endDate)
+    }
+
+    /// Check if a date is within reasonable pin range
+    /// - Parameters:
+    ///   - sourceDate: The source date to pin from
+    ///   - targetDate: The target date to pin to
+    ///   - maxDays: Maximum allowed distance in days (default: 30)
+    /// - Returns: True if within valid range
+    func isValidPinSourceDate(_ sourceDate: Date, for targetDate: Date, maxDays: Int = 30) -> Bool {
+        let normalizedSource = calendar.startOfDay(for: sourceDate)
+        let normalizedTarget = calendar.startOfDay(for: targetDate)
+
+        // Can't pin to same day
+        if normalizedSource == normalizedTarget {
+            return false
+        }
+
+        // Check distance
+        let components = calendar.dateComponents([.day], from: normalizedSource, to: normalizedTarget)
+        guard let dayDifference = components.day else {
+            return false
+        }
+
+        return abs(dayDifference) <= maxDays
+    }
 }

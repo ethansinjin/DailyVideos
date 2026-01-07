@@ -10,17 +10,30 @@ struct MediaItem: Identifiable {
     let mediaType: MediaType
     let duration: TimeInterval?
 
+    /// Context for how this media appears on a specific day
+    var displayContext: MediaDisplayContext = .native
+
     /// Reference to the PHAsset (not stored, fetched when needed)
     var asset: PHAsset? {
         let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
         return result.firstObject
     }
 
-    init(asset: PHAsset) {
+    init(asset: PHAsset, displayContext: MediaDisplayContext = .native) {
         self.assetIdentifier = asset.localIdentifier
         self.date = asset.creationDate ?? Date()
         self.mediaType = asset.mediaSubtypes.contains(.photoLive) ? .livePhoto : .video
         self.duration = asset.mediaType == .video ? asset.duration : nil
+        self.displayContext = displayContext
+    }
+
+    /// Create a MediaItem with a specific display context
+    init(assetIdentifier: String, date: Date, mediaType: MediaType, duration: TimeInterval?, displayContext: MediaDisplayContext) {
+        self.assetIdentifier = assetIdentifier
+        self.date = date
+        self.mediaType = mediaType
+        self.duration = duration
+        self.displayContext = displayContext
     }
 }
 
@@ -28,4 +41,13 @@ struct MediaItem: Identifiable {
 enum MediaType {
     case video
     case livePhoto
+}
+
+/// Context for how media is displayed on a given day
+enum MediaDisplayContext: Equatable {
+    /// Media that naturally belongs to this day
+    case native
+
+    /// Media pinned from another day (with source date)
+    case pinnedFromOtherDay(Date)
 }

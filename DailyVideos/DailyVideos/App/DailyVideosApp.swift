@@ -15,11 +15,12 @@ struct DailyVideosApp: App {
 
     init() {
         do {
-            // Configure SwiftData model container with PreferredMedia model
-            modelContainer = try ModelContainer(for: PreferredMedia.self)
+            // Configure SwiftData model container with both models
+            modelContainer = try ModelContainer(for: PreferredMedia.self, PinnedMedia.self)
 
-            // Inject model context into PreferencesManager
+            // Inject model context into managers
             PreferencesManager.shared.setModelContext(modelContainer.mainContext)
+            PinnedMediaManager.shared.setModelContext(modelContainer.mainContext)
         } catch {
             fatalError("Failed to initialize ModelContainer: \(error)")
         }

@@ -3,12 +3,15 @@ import SwiftUI
 struct DayDetailView: View {
     let day: CalendarDay
     let mediaItems: [MediaItem]
+    @ObservedObject var viewModel: CalendarViewModel
     let onDismiss: () -> Void
 
     @State private var selectedMedia: SelectedMedia?
     @State private var preferredAsset: String?
     @State private var showToast = false
     @State private var toastMessage = ""
+    @State private var showUnpinConfirmation = false
+    @State private var mediaToUnpin: MediaItem?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private var columns: [GridItem] {
@@ -39,8 +42,48 @@ struct DayDetailView: View {
         return PhotoLibraryManager.shared.selectDefaultRepresentativeMedia(from: mediaItems)
     }
 
-    /// Handle long press on a media item to set it as preferred
-    private func handleLongPress(on item: MediaItem) {
+    /// Context menu actions for a media item
+    @ViewBuilder
+    private func contextMenuActions(for item: MediaItem) -> some View {
+        // Cross-date pin removal
+        if case .pinnedFromOtherDay(let sourceDate) = item.displayContext {
+            Button(role: .destructive) {
+                mediaToUnpin = item
+                showUnpinConfirmation = true
+            } label: {
+                Label("Remove Pin from This Day", systemImage: "pin.slash")
+            }
+
+            Divider()
+
+            Text("Pinned from \(formatSourceDateLong(sourceDate))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+
+        // Preferred media selection (only for native media)
+        if case .native = item.displayContext {
+            if item.assetIdentifier == preferredAssetIdentifier {
+                Button {
+                    // Already preferred, allow unpinning
+                    PreferencesManager.shared.removePreferredMedia(for: day.date)
+                    preferredAsset = nil
+                    showToast(message: "Removed as preferred")
+                } label: {
+                    Label("Remove as Preferred", systemImage: "pin.slash.fill")
+                }
+            } else {
+                Button {
+                    handleSetPreferred(item)
+                } label: {
+                    Label("Set as Preferred", systemImage: "pin.fill")
+                }
+            }
+        }
+    }
+
+    /// Handle setting an item as preferred
+    private func handleSetPreferred(_ item: MediaItem) {
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -52,9 +95,12 @@ struct DayDetailView: View {
         preferredAsset = item.assetIdentifier
 
         // Show toast
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        toastMessage = "Pinned as preferred for \(formatter.string(from: day.date))"
+        showToast(message: "Set as preferred for \(formatDateMedium(day.date))")
+    }
+
+    /// Show toast message
+    private func showToast(message: String) {
+        toastMessage = message
         showToast = true
 
         // Hide toast after 2 seconds
@@ -91,7 +137,7 @@ struct DayDetailView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
 
-                            Text("Record some memories for this day!")
+                            Text("Record some memories for this day, or pin media from a nearby date using the button above.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -105,17 +151,33 @@ struct DayDetailView: View {
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(Array(mediaItems.enumerated()), id: \.element.id) { index, item in
                                 GeometryReader { geometry in
+                                    let isPinned = item.assetIdentifier == preferredAssetIdentifier
+                                    let isCrossDatePin: Bool = {
+                                        if case .pinnedFromOtherDay = item.displayContext {
+                                            return true
+                                        }
+                                        return false
+                                    }()
+                                    let pinSourceDate: Date? = {
+                                        if case .pinnedFromOtherDay(let sourceDate) = item.displayContext {
+                                            return sourceDate
+                                        }
+                                        return nil
+                                    }()
+
                                     MediaThumbnailView(
                                         mediaItem: item,
-                                        showPinBadge: item.assetIdentifier == preferredAssetIdentifier
+                                        showPinBadge: isPinned,
+                                        showCrossDatePinBadge: isCrossDatePin,
+                                        pinSourceDate: pinSourceDate
                                     )
                                     .frame(width: geometry.size.width, height: geometry.size.width)
                                     .contentShape(Rectangle())
                                     .onTapGesture {
                                         selectedMedia = SelectedMedia(index: index)
                                     }
-                                    .onLongPressGesture {
-                                        handleLongPress(on: item)
+                                    .contextMenu {
+                                        contextMenuActions(for: item)
                                     }
                                 }
                                 .aspectRatio(1, contentMode: .fit)
@@ -128,11 +190,48 @@ struct DayDetailView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        viewModel.startPinningMedia(for: day.date)
+                    } label: {
+                        Label("Pin Media", systemImage: "calendar.badge.plus")
+                    }
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         onDismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $viewModel.showPinMediaSheet) {
+                PinMediaSelectionView(
+                    targetDate: day.date,
+                    nearbyMediaByDate: viewModel.nearbyMediaByDate,
+                    selectedSourceDate: $viewModel.selectedPinSourceDate,
+                    isLoading: viewModel.isLoadingNearbyMedia,
+                    onPin: { assetId, sourceDate in
+                        viewModel.pinMedia(
+                            assetIdentifier: assetId,
+                            sourceDate: sourceDate,
+                            to: day.date
+                        )
+                    },
+                    onCancel: {
+                        viewModel.cancelPinning()
+                    }
+                )
+            }
+            .alert("Remove Pin", isPresented: $showUnpinConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Remove", role: .destructive) {
+                    if case .pinnedFromOtherDay = mediaToUnpin?.displayContext {
+                        viewModel.removePinnedMedia(for: day.date)
+                        showToast(message: "Pin removed")
+                    }
+                }
+            } message: {
+                Text("This will remove the media pinned from another day. The media will still exist on its original date.")
             }
             .overlay(
                 // Toast notification
@@ -169,6 +268,18 @@ struct DayDetailView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         return formatter.string(from: day.date)
+    }
+
+    private func formatDateMedium(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
+
+    private func formatSourceDateLong(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        return formatter.string(from: date)
     }
 }
 

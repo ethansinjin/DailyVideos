@@ -12,9 +12,10 @@ struct CalendarDay: Identifiable {
     // Media-related properties
     var mediaCount: Int = 0
     var representativeAssetIdentifier: String? = nil
+    var hasPinnedMedia: Bool = false
 
     var hasMedia: Bool {
-        mediaCount > 0
+        mediaCount > 0 || hasPinnedMedia
     }
 
     init(date: Date, day: Int, isInCurrentMonth: Bool) {

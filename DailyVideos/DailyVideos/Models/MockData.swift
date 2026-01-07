@@ -9,26 +9,16 @@ extension MediaItem {
         assetIdentifier: String = "mock-asset-id",
         date: Date = Date(),
         mediaType: MediaType = .video,
-        duration: TimeInterval? = 125
+        duration: TimeInterval? = 125,
+        displayContext: MediaDisplayContext = .native
     ) -> MediaItem {
         MediaItem(
             assetIdentifier: assetIdentifier,
             date: date,
             mediaType: mediaType,
-            duration: duration
+            duration: duration,
+            displayContext: displayContext
         )
-    }
-
-    private init(
-        assetIdentifier: String,
-        date: Date,
-        mediaType: MediaType,
-        duration: TimeInterval?
-    ) {
-        self.assetIdentifier = assetIdentifier
-        self.date = date
-        self.mediaType = mediaType
-        self.duration = duration
     }
 
     static var sampleVideo: MediaItem {
