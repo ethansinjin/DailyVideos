@@ -28,7 +28,7 @@ struct DailyVideosApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
         .modelContainer(modelContainer)
     }
