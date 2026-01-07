@@ -127,6 +127,7 @@ struct ContentView: View {
             DayDetailView(
                 day: dayDetail.day,
                 mediaItems: dayDetail.mediaItems,
+                viewModel: viewModel,
                 onDismiss: {
                     selectedDayDetail = nil
                     viewModel.selectedDay = nil
