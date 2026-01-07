@@ -293,7 +293,9 @@ struct VideoGenerationView: View {
                 Spacer()
 
                 Button("Cancel") {
-                    viewModel.cancelGeneration()
+                    Task {
+                        await viewModel.cancelGeneration()
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.red)

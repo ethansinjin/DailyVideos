@@ -28,6 +28,7 @@ class VideoGenerationViewModel: ObservableObject {
     // MARK: - Services
 
     private let selectionService = MediaSelectionService.shared
+    private let compositionService = VideoCompositionService.shared
 
     // MARK: - Initialization
 
@@ -89,15 +90,12 @@ class VideoGenerationViewModel: ObservableObject {
         isLoadingSelections = false
     }
 
-    // MARK: - Video Generation (Placeholder)
+    // MARK: - Video Generation
 
     /// Generate video from selected media
-    /// Note: This is a placeholder. Full implementation will be in Phase 5.
     func generateVideo() async {
         guard !mediaSelections.isEmpty else {
-            error = NSError(domain: "VideoGeneration", code: 3, userInfo: [
-                NSLocalizedDescriptionKey: "No media selected for video generation"
-            ])
+            error = VideoGenerationError.noMediaSelected
             return
         }
 
@@ -115,33 +113,53 @@ class VideoGenerationViewModel: ObservableObject {
             settings: compositionSettings
         )
 
-        // TODO: Phase 5 - Implement actual video composition
-        // For now, simulate progress
-        await simulateGeneration()
-    }
+        do {
+            // Generate video using composition service
+            let outputURL = try await compositionService.composeVideo(
+                from: mediaSelections,
+                settings: compositionSettings
+            ) { [weak self] progress in
+                Task { @MainActor in
+                    self?.generationProgress = progress
 
-    /// Simulate video generation (placeholder for Phase 5)
-    private func simulateGeneration() async {
-        for i in 0...10 {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
-            generationProgress = Double(i) / 10.0
-
-            if i < 5 {
-                currentJob?.status = .composing(progress: Double(i) / 5.0)
-            } else {
-                currentJob?.status = .exporting(progress: Double(i - 5) / 5.0)
+                    // Update job status based on progress
+                    if progress < 0.4 {
+                        self?.currentJob?.status = .composing(progress: progress / 0.4)
+                    } else {
+                        self?.currentJob?.status = .exporting(progress: (progress - 0.4) / 0.6)
+                    }
+                }
             }
-        }
 
-        // Complete
-        currentJob?.status = .completed(outputURL: URL(fileURLWithPath: "/tmp/placeholder.mp4"))
-        currentJob?.completedAt = Date()
-        generatedVideoURL = URL(fileURLWithPath: "/tmp/placeholder.mp4")
-        isGenerating = false
+            // Success!
+            currentJob?.status = .completed(outputURL: outputURL)
+            currentJob?.completedAt = Date()
+            generatedVideoURL = outputURL
+            isGenerating = false
+
+        } catch is CancellationError {
+            // User cancelled
+            currentJob?.status = .cancelled
+            isGenerating = false
+            generationProgress = 0
+
+        } catch let error as VideoGenerationError {
+            // Known error
+            self.error = error
+            currentJob?.status = .failed(error: error.localizedDescription ?? "Unknown error")
+            isGenerating = false
+
+        } catch {
+            // Unknown error
+            self.error = VideoGenerationError.unknown(error)
+            currentJob?.status = .failed(error: error.localizedDescription)
+            isGenerating = false
+        }
     }
 
     /// Cancel video generation
-    func cancelGeneration() {
+    func cancelGeneration() async {
+        await compositionService.cancelGeneration()
         isGenerating = false
         currentJob?.status = .cancelled
         generationProgress = 0
