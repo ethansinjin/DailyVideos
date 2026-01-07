@@ -46,6 +46,24 @@ struct DayCell: View {
                     }
                     Spacer()
                 }
+
+                // Pin indicator badge for cross-date pinned media
+                if calendarDay.hasPinnedMedia {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(4)
+                                .background(Color.orange.opacity(0.95))
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                                .padding(4)
+                        }
+                    }
+                }
             }
         }
         .frame(height: 60)
