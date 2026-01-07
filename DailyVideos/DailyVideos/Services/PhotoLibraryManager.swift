@@ -41,9 +41,11 @@ class PhotoLibraryManager: ObservableObject {
     // MARK: - Fetch Media
 
     /// Fetch all videos and Live Photos for a specific date
-    /// - Parameter date: The date to fetch media for
+    /// - Parameters:
+    ///   - date: The date to fetch media for
+    ///   - includePinnedMedia: Whether to include media pinned from other days (default: true)
     /// - Returns: Array of MediaItem objects
-    func fetchMedia(for date: Date) -> [MediaItem] {
+    func fetchMedia(for date: Date, includePinnedMedia: Bool = true) -> [MediaItem] {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
         let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? date
@@ -74,22 +76,46 @@ class PhotoLibraryManager: ObservableObject {
 
         // Convert videos to MediaItems
         videoAssets.enumerateObjects { asset, _, _ in
-            mediaItems.append(MediaItem(asset: asset))
+            mediaItems.append(MediaItem(asset: asset, displayContext: .native))
         }
 
         // Convert Live Photos to MediaItems
         livePhotoAssets.enumerateObjects { asset, _, _ in
-            mediaItems.append(MediaItem(asset: asset))
+            mediaItems.append(MediaItem(asset: asset, displayContext: .native))
         }
 
-        // Sort by creation date (newest first)
-        return mediaItems.sorted { ($0.date) > ($1.date) }
+        // Add pinned media if requested
+        if includePinnedMedia, let pinnedMedia = PinnedMediaManager.shared.getPinnedMedia(for: date) {
+            // Fetch the pinned asset
+            let result = PHAsset.fetchAssets(withLocalIdentifiers: [pinnedMedia.assetIdentifier], options: nil)
+            if let pinnedAsset = result.firstObject {
+                let pinnedItem = MediaItem(
+                    asset: pinnedAsset,
+                    displayContext: .pinnedFromOtherDay(pinnedMedia.sourceDate)
+                )
+                // Add pinned media at the beginning of the list
+                mediaItems.insert(pinnedItem, at: 0)
+            }
+        }
+
+        // Sort by creation date (newest first), but keep pinned items at the front
+        let pinnedItems = mediaItems.filter {
+            if case .pinnedFromOtherDay = $0.displayContext { return true }
+            return false
+        }
+        let nativeItems = mediaItems.filter {
+            if case .native = $0.displayContext { return true }
+            return false
+        }.sorted { $0.date > $1.date }
+
+        return pinnedItems + nativeItems
     }
 
     /// Data structure for day media info
     struct DayMediaInfo {
         let count: Int
         let representativeAssetIdentifier: String?
+        let hasPinnedMedia: Bool
     }
 
     /// Fetch media for an entire month and organize by day
@@ -152,27 +178,49 @@ class PhotoLibraryManager: ObservableObject {
         for (day, assets) in assetsByDay {
             var representativeAsset: String?
 
-            // First, check if user has a preference for this day
-            if let preferredAsset = PreferencesManager.shared.getPreferredMedia(for: day) {
-                // Verify the preferred asset still exists in this day's assets
-                let assetExists = assets.contains { $0.localIdentifier == preferredAsset }
-                if assetExists {
-                    representativeAsset = preferredAsset
+            // Check if there's pinned media for this day (takes priority)
+            let hasPinnedMedia = PinnedMediaManager.shared.getPinnedMedia(for: day) != nil
+            if hasPinnedMedia, let pinnedMedia = PinnedMediaManager.shared.getPinnedMedia(for: day) {
+                representativeAsset = pinnedMedia.assetIdentifier
+            } else {
+                // First, check if user has a preference for this day
+                if let preferredAsset = PreferencesManager.shared.getPreferredMedia(for: day) {
+                    // Verify the preferred asset still exists in this day's assets
+                    let assetExists = assets.contains { $0.localIdentifier == preferredAsset }
+                    if assetExists {
+                        representativeAsset = preferredAsset
+                    } else {
+                        // Preferred asset was deleted, remove the stale preference
+                        PreferencesManager.shared.removePreferredMedia(for: day)
+                        // Fall back to smart default
+                        representativeAsset = selectDefaultRepresentativeAsset(from: assets)
+                    }
                 } else {
-                    // Preferred asset was deleted, remove the stale preference
-                    PreferencesManager.shared.removePreferredMedia(for: day)
-                    // Fall back to smart default
+                    // No preference exists, use smart default
                     representativeAsset = selectDefaultRepresentativeAsset(from: assets)
                 }
-            } else {
-                // No preference exists, use smart default
-                representativeAsset = selectDefaultRepresentativeAsset(from: assets)
             }
 
             mediaInfo[day] = DayMediaInfo(
                 count: assets.count,
-                representativeAssetIdentifier: representativeAsset
+                representativeAssetIdentifier: representativeAsset,
+                hasPinnedMedia: hasPinnedMedia
             )
+        }
+
+        // Also check for days that only have pinned media (no native media)
+        // Get all pins for the month
+        let allPins = PinnedMediaManager.shared.getAllPinnedMedia()
+        for pin in allPins {
+            let pinDay = calendar.startOfDay(for: pin.targetDate)
+            // Only add if within this month and not already in mediaInfo
+            if pinDay >= startOfMonth && pinDay <= endOfMonth && mediaInfo[pinDay] == nil {
+                mediaInfo[pinDay] = DayMediaInfo(
+                    count: 0, // No native media
+                    representativeAssetIdentifier: pin.assetIdentifier,
+                    hasPinnedMedia: true
+                )
+            }
         }
 
         return mediaInfo
@@ -324,5 +372,62 @@ class PhotoLibraryManager: ObservableObject {
 
         // Priority 3: Return first item chronologically
         return sortedItems.first?.assetIdentifier
+    }
+
+    // MARK: - Pin Selection Support
+
+    /// Fetch media for a date range (for pin selection UI)
+    /// - Parameters:
+    ///   - startDate: Start of the date range
+    ///   - endDate: End of the date range
+    /// - Returns: Dictionary mapping dates to arrays of MediaItems
+    func fetchMediaForDateRange(from startDate: Date, to endDate: Date) -> [Date: [MediaItem]] {
+        let calendar = Calendar.current
+        let normalizedStart = calendar.startOfDay(for: startDate)
+        let normalizedEnd = calendar.startOfDay(for: endDate)
+
+        var mediaByDate: [Date: [MediaItem]] = [:]
+
+        // Iterate through each day in the range
+        var currentDate = normalizedStart
+        while currentDate <= normalizedEnd {
+            let media = fetchMedia(for: currentDate, includePinnedMedia: false)
+            if !media.isEmpty {
+                mediaByDate[currentDate] = media
+            }
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                break
+            }
+            currentDate = nextDate
+        }
+
+        return mediaByDate
+    }
+
+    /// Get nearby dates that have media (for pin source selection)
+    /// - Parameters:
+    ///   - date: The center date
+    ///   - days: Number of days in each direction (default: 7)
+    /// - Returns: Array of dates that have media, sorted by proximity to center date
+    func getDatesWithMedia(around date: Date, within days: Int = 7) -> [Date] {
+        let calendar = Calendar.current
+        let centerDate = calendar.startOfDay(for: date)
+
+        guard let startDate = calendar.date(byAdding: .day, value: -days, to: centerDate),
+              let endDate = calendar.date(byAdding: .day, value: days, to: centerDate) else {
+            return []
+        }
+
+        let mediaByDate = fetchMediaForDateRange(from: startDate, to: endDate)
+
+        // Filter out the center date itself (can't pin from same day)
+        let datesWithMedia = mediaByDate.keys.filter { $0 != centerDate }
+
+        // Sort by proximity to center date
+        return datesWithMedia.sorted { date1, date2 in
+            let distance1 = abs(date1.timeIntervalSince(centerDate))
+            let distance2 = abs(date2.timeIntervalSince(centerDate))
+            return distance1 < distance2
+        }
     }
 }
