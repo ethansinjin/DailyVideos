@@ -287,6 +287,7 @@ struct DayDetailView: View {
     DayDetailView(
         day: .sampleDayWithMedia,
         mediaItems: MediaItem.sampleMediaItems,
+        viewModel: CalendarViewModel(),
         onDismiss: {}
     )
 }
@@ -295,6 +296,7 @@ struct DayDetailView: View {
     DayDetailView(
         day: .sampleDayWithoutMedia,
         mediaItems: [],
+        viewModel: CalendarViewModel(),
         onDismiss: {}
     )
 }
