@@ -10,6 +10,7 @@ import Foundation
 import UserNotifications
 @testable import DailyVideos
 
+@MainActor
 struct NotificationManagerTests {
 
     // MARK: - Singleton Tests
@@ -105,23 +106,23 @@ struct NotificationManagerTests {
     // MARK: - Permission Tests
 
     @Test func testRequestPermissionCompletionIsCalled() async throws {
-        let expectation = Confirmation("Permission completion called", expectedCount: 1)
-
-        NotificationManager.shared.requestPermission { granted in
-            expectation()
+        await withCheckedContinuation { continuation in
+            NotificationManager.shared.requestPermission { _ in
+                continuation.resume()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 5.0)
+        // Test passes if completion is called
+        #expect(true)
     }
 
     @Test func testCheckAuthorizationStatusCompletionIsCalled() async throws {
-        let expectation = Confirmation("Authorization status completion called", expectedCount: 1)
-
-        NotificationManager.shared.checkAuthorizationStatus { status in
-            expectation()
+        await withCheckedContinuation { continuation in
+            NotificationManager.shared.checkAuthorizationStatus { _ in
+                continuation.resume()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 5.0)
+        // Test passes if completion is called
+        #expect(true)
     }
 
     // MARK: - Scheduling Tests
