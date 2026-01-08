@@ -3,7 +3,7 @@ import UIKit
 internal import Photos
 
 /// Represents a single video or Live Photo from the photo library
-struct MediaItem: Identifiable {
+struct MediaItem: Identifiable, Equatable {
     let id = UUID()
     let assetIdentifier: String
     let date: Date
@@ -12,6 +12,13 @@ struct MediaItem: Identifiable {
 
     /// Context for how this media appears on a specific day
     var displayContext: MediaDisplayContext = .native
+
+    // MARK: - Equatable
+
+    static func == (lhs: MediaItem, rhs: MediaItem) -> Bool {
+        lhs.assetIdentifier == rhs.assetIdentifier &&
+        lhs.displayContext == rhs.displayContext
+    }
 
     /// Reference to the PHAsset (not stored, fetched when needed)
     var asset: PHAsset? {
@@ -38,7 +45,7 @@ struct MediaItem: Identifiable {
 }
 
 /// Type of media item
-enum MediaType {
+enum MediaType: Equatable {
     case video
     case livePhoto
 }

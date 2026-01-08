@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 /// ViewModel for the video generation tab
 @MainActor
@@ -194,9 +195,9 @@ class VideoGenerationViewModel: ObservableObject {
 
     /// Get share items for system share sheet
     /// - Returns: Array of items to share
-    func getShareItems() -> [Any] {
+    func getShareItems() async -> [Any] {
         guard let videoURL = generatedVideoURL else { return [] }
-        return exportService.getShareItems(for: videoURL)
+        return await exportService.getShareItems(for: videoURL)
     }
 
     /// Get file size of generated video

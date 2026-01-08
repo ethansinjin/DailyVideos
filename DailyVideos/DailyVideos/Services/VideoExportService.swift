@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Photos
+internal import Photos
 import UIKit
 
 /// Service for exporting and sharing generated videos

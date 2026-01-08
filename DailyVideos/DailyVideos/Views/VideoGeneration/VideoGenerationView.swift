@@ -11,6 +11,7 @@ import SwiftUI
 struct VideoGenerationView: View {
     @StateObject private var viewModel = VideoGenerationViewModel()
     @State private var showingShareSheet = false
+    @State private var shareItems: [Any] = []
 
     var body: some View {
         NavigationStack {
@@ -54,8 +55,13 @@ struct VideoGenerationView: View {
             .navigationBarTitleDisplayMode(.large)
         }
         .sheet(isPresented: $showingShareSheet) {
-            if !viewModel.getShareItems().isEmpty {
-                ShareSheet(items: viewModel.getShareItems())
+            if !shareItems.isEmpty {
+                ShareSheet(items: shareItems)
+            }
+        }
+        .task(id: showingShareSheet) {
+            if showingShareSheet {
+                shareItems = await viewModel.getShareItems()
             }
         }
     }
