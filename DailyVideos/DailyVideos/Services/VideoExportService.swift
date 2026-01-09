@@ -7,7 +7,11 @@
 
 import Foundation
 internal import Photos
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
 
 /// Service for exporting and sharing generated videos
 actor VideoExportService {

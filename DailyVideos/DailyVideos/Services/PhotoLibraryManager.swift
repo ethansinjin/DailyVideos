@@ -1,6 +1,10 @@
 import Foundation
 internal import Photos
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
 import Combine
 
 /// Singleton service for accessing and managing the photo library

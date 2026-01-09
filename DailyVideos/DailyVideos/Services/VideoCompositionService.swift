@@ -8,7 +8,11 @@
 import Foundation
 import AVFoundation
 internal import Photos
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
 
 /// Service for composing videos from media selections using AVFoundation
 actor VideoCompositionService {

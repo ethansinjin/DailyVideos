@@ -1,5 +1,9 @@
 import Foundation
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
 internal import Photos
 
 /// Represents a single video or Live Photo from the photo library
