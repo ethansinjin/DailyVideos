@@ -522,6 +522,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Daily Videos";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "DailyVideos needs permission to save photos to your library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "DailyVideos needs access to your photo library to display your videos and Live Photos in a calendar view.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -564,6 +566,8 @@
 				DEVELOPMENT_TEAM = K2P452F89V;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Daily Videos";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "DailyVideos needs permission to save photos to your library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "DailyVideos needs access to your photo library to display your videos and Live Photos in a calendar view.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
