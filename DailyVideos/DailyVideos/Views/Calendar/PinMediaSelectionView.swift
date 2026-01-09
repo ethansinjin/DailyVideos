@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 #if os(macOS)
@@ -25,7 +25,7 @@ struct PinMediaSelectionView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     // Platform-specific toolbar placements
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
     #else
     private let leadingPlacement: ToolbarItemPlacement = .automatic
@@ -98,7 +98,7 @@ struct PinMediaSelectionView: View {
                 }
             }
             .navigationTitle("Pin Media")
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
@@ -175,7 +175,7 @@ struct PinMediaSelectionView: View {
         .padding(.horizontal, 16)
         .background(
             isSelected ? Color.blue : {
-                #if os(iOS)
+                #if os(iOS) || os(visionOS)
                 Color(UIColor.secondarySystemGroupedBackground)
                 #elseif os(macOS)
                 Color(NSColor.underPageBackgroundColor)
@@ -205,7 +205,7 @@ struct PinMediaSelectionView: View {
                         .frame(width: geometry.size.width, height: geometry.size.width)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            #if os(iOS)
+                            #if os(iOS) || os(visionOS)
                             // Haptic feedback
                             let generator = UIImpactFeedbackGenerator(style: .medium)
                             generator.impactOccurred()
@@ -222,7 +222,7 @@ struct PinMediaSelectionView: View {
         }
         .background(
             {
-                #if os(iOS)
+                #if os(iOS) || os(visionOS)
                 Color(UIColor.systemBackground)
                 #elseif os(macOS)
                 Color(NSColor.windowBackgroundColor)

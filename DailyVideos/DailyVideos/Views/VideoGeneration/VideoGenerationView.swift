@@ -52,7 +52,7 @@ struct VideoGenerationView: View {
                 .padding()
             }
             .navigationTitle("Generate Video")
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.large)
             #endif
         }
@@ -402,7 +402,7 @@ struct VideoGenerationView: View {
 
 // MARK: - Share Sheet
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 /// UIKit share sheet wrapper for SwiftUI
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]

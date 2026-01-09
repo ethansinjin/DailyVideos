@@ -1,5 +1,5 @@
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -36,7 +36,7 @@ struct PermissionRequestView: View {
     }
 
     private func openSettings() {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
         }

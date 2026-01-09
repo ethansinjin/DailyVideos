@@ -37,6 +37,9 @@ Do NOT auto-commit if:
 - Multiple unrelated changes are mixed together
 - The user explicitly asks to review before committing
 
+### Platform Conditional Style
+When using `#if os(...)` checks, prefer grouping `#if os(iOS) || os(visionOS)` together where possible, and use `#if os(macOS)` separately if needed. No `tvOS` or `watchOS` branches are needed for this project.
+
 ## Project Plans
 
 Architecture and feature plans are available in the `plans/` directory:

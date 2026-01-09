@@ -8,7 +8,9 @@
 import Testing
 import Foundation
 @testable import DailyVideos
+internal import CoreGraphics
 
+@MainActor
 struct VideoGenerationModelsTests {
 
     // MARK: - TimeframeSelection

@@ -28,7 +28,7 @@ struct MediaDetailView: View {
                         .tag(index)
                 }
             }
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(visionOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
 #endif
             .ignoresSafeArea()

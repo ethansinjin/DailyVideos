@@ -1,6 +1,6 @@
 import SwiftUI
 import UserNotifications
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -21,7 +21,7 @@ struct SettingsView: View {
     @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     // Platform-specific toolbar placements
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
     #else
     private let trailingPlacement: ToolbarItemPlacement = .automatic
@@ -31,7 +31,7 @@ struct SettingsView: View {
         NavigationStack {
             settingsList
                 .navigationTitle("Settings")
-                #if os(iOS)
+                #if os(iOS) || os(visionOS)
                 .navigationBarTitleDisplayMode(.inline)
                 #endif
                 .toolbar {
@@ -78,9 +78,9 @@ struct SettingsView: View {
                 Label("Top Navigation Bar", systemImage: "rectangle.topthird.inset.filled")
                     .tag(NavigationControlsPosition.top)
             }
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .pickerStyle(.inline)
-            #else
+            #elseif os(macOS)
             .pickerStyle(.radioGroup)
             #endif
         } header: {
@@ -250,7 +250,7 @@ struct SettingsView: View {
     }
 
     private func openAppSettings() {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
         }
@@ -283,7 +283,7 @@ private struct NotificationAlertModifier: ViewModifier {
     }
 
     private func openAppSettings() {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
         }

@@ -1,6 +1,6 @@
 import SwiftUI
 internal import Photos
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -13,7 +13,7 @@ struct ContentView: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
     // Platform-specific toolbar placements
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
     private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
     private let bottomPlacement: ToolbarItemPlacement = .bottomBar
@@ -41,7 +41,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(viewModel.currentMonth.displayString)
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
@@ -228,7 +228,7 @@ struct ContentView: View {
 
     private func handleDayTap(_ day: CalendarDay) {
         // Haptic feedback
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
         #endif

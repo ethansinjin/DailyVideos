@@ -1,5 +1,5 @@
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -18,7 +18,7 @@ struct DayDetailView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     // Platform-specific toolbar placements
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
     private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
     #else
@@ -96,7 +96,7 @@ struct DayDetailView: View {
 
     /// Handle setting an item as preferred
     private func handleSetPreferred(_ item: MediaItem) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -202,7 +202,7 @@ struct DayDetailView: View {
                     }
                 }
             }
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
@@ -269,7 +269,7 @@ struct DayDetailView: View {
                 }
             )
         }
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         .fullScreenCover(item: $selectedMedia) { selected in
             MediaDetailView(
                 mediaItems: mediaItems,
