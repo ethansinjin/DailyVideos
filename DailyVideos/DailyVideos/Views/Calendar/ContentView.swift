@@ -163,52 +163,56 @@ struct ContentView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 0) {
-                    // Day of week labels and calendar grid container
-                    VStack(spacing: 0) {
-                        // Day of week labels
-                        DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
-                            .padding(.top, 8)
-                            .padding(.bottom, 8)
+                    #if os(macOS)
+                    // Plain in-content month header to avoid toolbar bubble appearance
+                    Text(viewModel.currentMonth.displayString)
+                        .font(.largeTitle)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+                    #endif
 
-                        // Calendar grid with size-appropriate constraints
-                        ZStack {
-                            LazyVGrid(columns: columns, spacing: 4) {
-                                ForEach(viewModel.currentMonth.days) { day in
-                                    DayCell(
-                                        calendarDay: day,
-                                        isToday: viewModel.isToday(day.date)
-                                    )
-                                    .onTapGesture {
-                                        handleDayTap(day)
-                                    }
+                    // Day of week labels
+                    DayOfWeekLabels(weekdaySymbols: viewModel.weekdaySymbols())
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
+
+                    // Calendar grid with size-appropriate constraints
+                    ZStack {
+                        LazyVGrid(columns: columns, spacing: 4) {
+                            ForEach(viewModel.currentMonth.days) { day in
+                                DayCell(
+                                    calendarDay: day,
+                                    isToday: viewModel.isToday(day.date)
+                                )
+                                .onTapGesture {
+                                    handleDayTap(day)
                                 }
                             }
+                        }
 
-                            // Loading indicator
-                            if viewModel.isLoading {
-                                ProgressView()
-                                    .scaleEffect(1.5)
-                                    .padding()
-                                    #if os(iOS) || os(visionOS)
-                                    .background(Color(uiColor: .systemBackground).opacity(0.8))
-                                    #elseif os(macOS)
-                                    .background(Color(nsColor: .windowBackgroundColor).opacity(0.8))
-                                    #endif
-                                    .cornerRadius(10)
-                            }
+                        // Loading indicator
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .padding()
+                                #if os(iOS) || os(visionOS)
+                                .background(Color(uiColor: .systemBackground).opacity(0.8))
+                                #elseif os(macOS)
+                                .background(Color(nsColor: .windowBackgroundColor).opacity(0.8))
+                                #endif
+                                .cornerRadius(10)
                         }
                     }
-                    .padding(.horizontal)
-                    .frame(maxWidth: min(geometry.size.width, 800))
-
-                    Spacer(minLength: 20)
                 }
-                .padding(.top)
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                .frame(maxWidth: min(geometry.size.width, 800))
+
+                Spacer(minLength: 20)
             }
-            .refreshable {
-                await refreshCalendar()
-            }
+            .padding(.top)
+            .frame(maxWidth: .infinity)
         }
     }
 
