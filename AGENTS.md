@@ -53,7 +53,7 @@ Architecture and feature plans are available in the `plans/` directory:
 - Phase 8 contains future enhancement ideas
 
 ### 2. ARCHITECTURE_PINNED_MEDIA.md - Preferred Media Selection
-**Status**: 📋 **PLANNED** (Not yet implemented)
+**Status**: ✅ **COMPLETE** (Implemented)
 - Feature to let users choose which photo/video represents each day
 - Uses SwiftData model `PreferredMedia` for persistence
 - Pin badge UI to indicate preferred media
@@ -61,7 +61,7 @@ Architecture and feature plans are available in the `plans/` directory:
 - 8 implementation phases outlined
 
 ### 3. ARCHITECTURE_PINNED_MEDIA_FROM_NEARBY_DAYS.md - Cross-Date Pin Feature
-**Status**: 📋 **PLANNED** (Not yet implemented)
+**Status**: ✅ **COMPLETE** (Implemented)
 - "Cheat day" feature to pin media from other days
 - Uses SwiftData model `PinnedMedia` (separate from preferred media)
 - Browse nearby dates (±7 days) to find media to pin
@@ -70,7 +70,7 @@ Architecture and feature plans are available in the `plans/` directory:
 - Depends on completion of preferred media feature
 
 ### 4. ARCHITECTURE_VIDEO_GENERATION.md - Video Compilation Tab
-**Status**: 📋 **PLANNED** (Not yet implemented)
+**Status**: 🚧 **IN PROGRESS** (Core models/services/view model implemented; UI is simplified)
 - New tab for generating compiled videos from timeframes
 - Select month, year, or custom date range
 - Automatically picks one media per day (prioritizes pinned media)
@@ -80,7 +80,7 @@ Architecture and feature plans are available in the `plans/` directory:
 - Complex feature involving video processing
 
 ### 5. UNIT_TESTING_PLAN.md - Comprehensive Testing Strategy
-**Status**: 📋 **PLANNED** (Tests not yet written)
+**Status**: 🚧 **IN PROGRESS** (Calendar + notification tests implemented; gaps remain)
 - Detailed unit test plan for all models, services, and view models
 - UI test plan for all user flows
 - Accessibility and performance testing

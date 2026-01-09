@@ -1,5 +1,8 @@
 # Preferred Media Selection - Architecture Plan
 
+## Status
+✅ **Complete** — implemented in codebase (models, manager, UI badges, context menu actions, settings cleanup).
+
 ## Overview
 Enable users to choose which photo or video represents each day in the calendar view when multiple media items exist for that day.
 

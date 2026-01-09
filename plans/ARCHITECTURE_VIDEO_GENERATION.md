@@ -1,5 +1,8 @@
 ## Video Generation Tab - Architecture Plan
 
+### Status
+🚧 **In Progress** — core models/services/view model are implemented, plus a simplified Video Generation tab UI. Full timeframe picker, rich preview UI, and advanced settings/preview components are still pending.
+
 ### Overview
 A new tab that allows users to generate compiled videos from their media library. The feature concatenates one piece of media per day within a selected timeframe (month, year, or custom range), creating a visual diary or highlight reel.
 

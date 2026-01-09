@@ -2,6 +2,9 @@
 
 This document outlines comprehensive unit tests and UI tests for the DailyVideos iOS app.
 
+## Status
+🚧 **In Progress** — implemented tests: CalendarDay, MonthData, CalendarManager, CalendarViewModel, NotificationManager, and video generation models, plus UI test suites. Remaining areas include pinned media managers, preferences, photo library integration, and video generation services/view models.
+
 ## Prerequisites
 
 Before executing this plan:

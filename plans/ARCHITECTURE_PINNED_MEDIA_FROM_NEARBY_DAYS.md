@@ -1,5 +1,8 @@
 # Architecture Plan: Pin Media from Other Days Feature
 
+## Status
+✅ **Complete** — implemented in codebase (PinnedMedia model/manager, selection UI, badges, context menu removal, calendar indicators, settings cleanup).
+
 ## Overview
 This document outlines the architecture for a new "cheat day" feature that allows users to pin media from nearby dates to display on days that may have no media or insufficient media. This is conceptually different from the existing "preferred media" feature, which selects a representative from media that already exists on a given day.
 
