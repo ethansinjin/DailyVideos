@@ -53,7 +53,7 @@ final class MediaDetailViewUITests: XCTestCase {
 
         // Close button should exist
         let buttons = app.buttons.allElementsBoundByIndex
-        let hasCloseButton = buttons.contains { button in
+        _ = buttons.contains { button in
             let label = button.label.lowercased()
             return label.contains("close") || label.contains("done") || label == "×"
         }
@@ -94,8 +94,6 @@ final class MediaDetailViewUITests: XCTestCase {
     @MainActor
     func testSwipeToNavigateBetweenMedia() throws {
         navigateToMediaDetailView()
-
-        let initialState = app.state
 
         // Try swiping left (next media)
         app.swipeLeft()

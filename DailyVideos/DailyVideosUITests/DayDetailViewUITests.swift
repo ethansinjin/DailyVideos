@@ -60,7 +60,7 @@ final class DayDetailViewUITests: XCTestCase {
 
             // Close button should exist
             let closeButtons = app.buttons.allElementsBoundByIndex
-            let hasCloseButton = closeButtons.contains { button in
+            _ = closeButtons.contains { button in
                 let label = button.label.lowercased()
                 return label.contains("close") || label.contains("done") || label == "×" || label == "✕"
             }
@@ -135,8 +135,6 @@ final class DayDetailViewUITests: XCTestCase {
     @MainActor
     func testDismissDayDetailView() throws {
         Thread.sleep(forTimeInterval: 1.0)
-
-        let initialButtonCount = app.buttons.count
 
         // Open day detail
         let buttons = app.buttons.allElementsBoundByIndex
