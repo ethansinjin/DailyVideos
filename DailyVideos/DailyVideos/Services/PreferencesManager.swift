@@ -16,6 +16,24 @@ class PreferencesManager {
 
     private init() {}
 
+    /// Execute a block synchronously on the main thread and return its value
+    private func syncOnMain<T>(_ block: () -> T) -> T {
+        if Thread.isMainThread {
+            return block()
+        } else {
+            return DispatchQueue.main.sync(execute: block)
+        }
+    }
+
+    /// Execute a block asynchronously on the main thread
+    private func asyncOnMain(_ block: @escaping () -> Void) {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.async(execute: block)
+        }
+    }
+
     /// Set the model context (called from app initialization)
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
@@ -28,6 +46,13 @@ class PreferencesManager {
     ///   - date: The day (will be normalized to start of day)
     ///   - assetIdentifier: PHAsset local identifier
     func setPreferredMedia(for date: Date, assetIdentifier: String) {
+        asyncOnMain {
+            self.setPreferredMedia_onMain(for: date, assetIdentifier: assetIdentifier)
+        }
+    }
+
+    /// Main-thread implementation for saving preference (uses SwiftData context)
+    private func setPreferredMedia_onMain(for date: Date, assetIdentifier: String) {
         guard let context = modelContext else {
             print("⚠️ PreferencesManager: ModelContext not set")
             return
@@ -67,6 +92,13 @@ class PreferencesManager {
     /// - Parameter date: The day to query
     /// - Returns: Asset identifier if preference exists, nil otherwise
     func getPreferredMedia(for date: Date) -> String? {
+        return syncOnMain {
+            self.getPreferredMedia_onMain(for: date)
+        }
+    }
+
+    /// Main-thread implementation for fetching a preference
+    private func getPreferredMedia_onMain(for date: Date) -> String? {
         guard let context = modelContext else {
             print("⚠️ PreferencesManager: ModelContext not set")
             return nil
@@ -91,6 +123,13 @@ class PreferencesManager {
     /// Remove preference for a specific day
     /// - Parameter date: The day to remove preference for
     func removePreferredMedia(for date: Date) {
+        asyncOnMain {
+            self.removePreferredMedia_onMain(for: date)
+        }
+    }
+
+    /// Main-thread implementation for removing a preference
+    private func removePreferredMedia_onMain(for date: Date) {
         guard let context = modelContext else {
             print("⚠️ PreferencesManager: ModelContext not set")
             return
@@ -121,6 +160,13 @@ class PreferencesManager {
     /// - Returns: Number of preferences removed
     @discardableResult
     func cleanupPreferences(olderThan timeframe: CleanupTimeframe) -> Int {
+        return syncOnMain {
+            self.cleanupPreferences_onMain(olderThan: timeframe)
+        }
+    }
+
+    /// Main-thread implementation for cleaning up preferences
+    private func cleanupPreferences_onMain(olderThan timeframe: CleanupTimeframe) -> Int {
         guard let context = modelContext else {
             print("⚠️ PreferencesManager: ModelContext not set")
             return 0
@@ -171,6 +217,13 @@ class PreferencesManager {
     /// Get total count of stored preferences
     /// - Returns: Number of preferences
     func getPreferenceCount() -> Int {
+        return syncOnMain {
+            self.getPreferenceCount_onMain()
+        }
+    }
+
+    /// Main-thread implementation for counting preferences
+    private func getPreferenceCount_onMain() -> Int {
         guard let context = modelContext else {
             print("⚠️ PreferencesManager: ModelContext not set")
             return 0

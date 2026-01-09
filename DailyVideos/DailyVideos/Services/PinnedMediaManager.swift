@@ -17,6 +17,24 @@ class PinnedMediaManager {
 
     private init() {}
 
+    /// Execute a block synchronously on the main thread and return its value
+    private func syncOnMain<T>(_ block: () -> T) -> T {
+        if Thread.isMainThread {
+            return block()
+        } else {
+            return DispatchQueue.main.sync(execute: block)
+        }
+    }
+
+    /// Execute a block asynchronously on the main thread
+    private func asyncOnMain(_ block: @escaping () -> Void) {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.async(execute: block)
+        }
+    }
+
     /// Set the model context (called from app initialization)
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
@@ -30,6 +48,14 @@ class PinnedMediaManager {
     ///   - sourceDate: The date where the media actually originates from
     ///   - targetDate: The day where media should appear (will be normalized to start of day)
     func pinMedia(assetIdentifier: String, sourceDate: Date, to targetDate: Date) {
+        // Ensure SwiftData context usage happens on the main thread
+        asyncOnMain {
+            self.pinMedia_onMain(assetIdentifier: assetIdentifier, sourceDate: sourceDate, to: targetDate)
+        }
+    }
+
+    /// Main-thread implementation of pinning logic (uses SwiftData context)
+    private func pinMedia_onMain(assetIdentifier: String, sourceDate: Date, to targetDate: Date) {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return
@@ -87,6 +113,13 @@ class PinnedMediaManager {
     /// - Parameter targetDate: The day to query
     /// - Returns: PinnedMedia if exists, nil otherwise
     func getPinnedMedia(for targetDate: Date) -> PinnedMedia? {
+        return syncOnMain {
+            self.getPinnedMedia_onMain(for: targetDate)
+        }
+    }
+
+    /// Main-thread implementation for fetching a pin (uses SwiftData context)
+    private func getPinnedMedia_onMain(for targetDate: Date) -> PinnedMedia? {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return nil
@@ -111,6 +144,13 @@ class PinnedMediaManager {
     /// Remove pinned media for a target date
     /// - Parameter targetDate: The day to remove pin for
     func removePinnedMedia(for targetDate: Date) {
+        asyncOnMain {
+            self.removePinnedMedia_onMain(for: targetDate)
+        }
+    }
+
+    /// Main-thread implementation for removing a pin
+    private func removePinnedMedia_onMain(for targetDate: Date) {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return
@@ -150,6 +190,13 @@ class PinnedMediaManager {
     /// Get all pinned media (for management/cleanup)
     /// - Returns: Array of all PinnedMedia records
     func getAllPinnedMedia() -> [PinnedMedia] {
+        return syncOnMain {
+            self.getAllPinnedMedia_onMain()
+        }
+    }
+
+    /// Main-thread implementation for fetching all pins
+    private func getAllPinnedMedia_onMain() -> [PinnedMedia] {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return []
@@ -174,6 +221,13 @@ class PinnedMediaManager {
     /// - Returns: Number of pins removed
     @discardableResult
     func cleanupPins(olderThan timeframe: CleanupTimeframe) -> Int {
+        return syncOnMain {
+            self.cleanupPins_onMain(olderThan: timeframe)
+        }
+    }
+
+    /// Main-thread implementation for cleaning up pins
+    private func cleanupPins_onMain(olderThan timeframe: CleanupTimeframe) -> Int {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return 0
@@ -225,12 +279,19 @@ class PinnedMediaManager {
     /// - Returns: Number of orphaned pins removed
     @discardableResult
     func cleanupOrphanedPins() -> Int {
+        return syncOnMain {
+            self.cleanupOrphanedPins_onMain()
+        }
+    }
+
+    /// Main-thread implementation for removing orphaned pins
+    private func cleanupOrphanedPins_onMain() -> Int {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return 0
         }
 
-        let allPins = getAllPinnedMedia()
+        let allPins = getAllPinnedMedia_onMain()
         var orphanedCount = 0
 
         for pin in allPins {
@@ -257,6 +318,13 @@ class PinnedMediaManager {
     /// Get total count of stored pins
     /// - Returns: Number of pins
     func getPinCount() -> Int {
+        return syncOnMain {
+            self.getPinCount_onMain()
+        }
+    }
+
+    /// Main-thread implementation for counting pins
+    private func getPinCount_onMain() -> Int {
         guard let context = modelContext else {
             print("⚠️ PinnedMediaManager: ModelContext not set")
             return 0
@@ -273,3 +341,4 @@ class PinnedMediaManager {
         }
     }
 }
+
