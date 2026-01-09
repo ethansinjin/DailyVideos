@@ -6,6 +6,12 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
+#if os(macOS)
+import AppKit
+#endif
 
 /// View for selecting media from nearby dates to pin to a target date
 struct PinMediaSelectionView: View {
@@ -17,6 +23,13 @@ struct PinMediaSelectionView: View {
     let onCancel: () -> Void
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    // Platform-specific toolbar placements
+    #if os(iOS)
+    private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
+    #else
+    private let leadingPlacement: ToolbarItemPlacement = .automatic
+    #endif
 
     private var sortedDates: [Date] {
         nearbyMediaByDate.keys.sorted { date1, date2 in
@@ -42,7 +55,15 @@ struct PinMediaSelectionView: View {
                 // Target date header
                 targetDateHeader
                     .padding()
-                    .background(Color(.systemGroupedBackground))
+                    .background(
+                        {
+                            #if os(iOS) || os(visionOS)
+                            Color(UIColor.systemGroupedBackground)
+                            #elseif os(macOS)
+                            Color(NSColor.windowBackgroundColor)
+                            #endif
+                        }()
+                    )
 
                 Divider()
 
@@ -55,7 +76,15 @@ struct PinMediaSelectionView: View {
                         // Date selection (horizontal scroll)
                         dateSelectionSection
                             .padding(.vertical, 12)
-                            .background(Color(.systemGroupedBackground))
+                            .background(
+                                {
+                                    #if os(iOS) || os(visionOS)
+                                    Color(UIColor.systemGroupedBackground)
+                                    #elseif os(macOS)
+                                    Color(NSColor.windowBackgroundColor)
+                                    #endif
+                                }()
+                            )
 
                         Divider()
 
@@ -69,9 +98,11 @@ struct PinMediaSelectionView: View {
                 }
             }
             .navigationTitle("Pin Media")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: leadingPlacement) {
                     Button("Cancel") {
                         onCancel()
                     }
@@ -142,7 +173,17 @@ struct PinMediaSelectionView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(isSelected ? Color.blue : Color(.secondarySystemGroupedBackground))
+        .background(
+            isSelected ? Color.blue : {
+                #if os(iOS)
+                Color(UIColor.secondarySystemGroupedBackground)
+                #elseif os(macOS)
+                Color(NSColor.underPageBackgroundColor)
+                #else
+                Color(.secondarySystemGroupedBackground)
+                #endif
+            }()
+        )
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -164,9 +205,11 @@ struct PinMediaSelectionView: View {
                         .frame(width: geometry.size.width, height: geometry.size.width)
                         .contentShape(Rectangle())
                         .onTapGesture {
+                            #if os(iOS)
                             // Haptic feedback
                             let generator = UIImpactFeedbackGenerator(style: .medium)
                             generator.impactOccurred()
+                            #endif
 
                             // Pin this media
                             onPin(item.assetIdentifier, sourceDate)
@@ -177,7 +220,17 @@ struct PinMediaSelectionView: View {
             }
             .padding()
         }
-        .background(Color(.systemBackground))
+        .background(
+            {
+                #if os(iOS)
+                Color(UIColor.systemBackground)
+                #elseif os(macOS)
+                Color(NSColor.windowBackgroundColor)
+                #else
+                Color(.systemBackground)
+                #endif
+            }()
+        )
     }
 
     private var placeholderSection: some View {
@@ -268,3 +321,4 @@ struct PinMediaSelectionView: View {
         onCancel: {}
     )
 }
+

@@ -20,13 +20,22 @@ struct SettingsView: View {
     @State private var showingCleanupOrphanedPinsAlert = false
     @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
+    // Platform-specific toolbar placements
+    #if os(iOS)
+    private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
+    #else
+    private let trailingPlacement: ToolbarItemPlacement = .automatic
+    #endif
+
     var body: some View {
         NavigationStack {
             settingsList
                 .navigationTitle("Settings")
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: trailingPlacement) {
                         Button("Done") {
                             dismiss()
                         }

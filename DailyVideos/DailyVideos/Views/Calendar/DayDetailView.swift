@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 struct DayDetailView: View {
     let day: CalendarDay
@@ -13,6 +16,15 @@ struct DayDetailView: View {
     @State private var showUnpinConfirmation = false
     @State private var mediaToUnpin: MediaItem?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    // Platform-specific toolbar placements
+    #if os(iOS)
+    private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
+    private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
+    #else
+    private let leadingPlacement: ToolbarItemPlacement = .automatic
+    private let trailingPlacement: ToolbarItemPlacement = .automatic
+    #endif
 
     private var columns: [GridItem] {
         let count = horizontalSizeClass == .regular ? 5 : 3
@@ -84,9 +96,11 @@ struct DayDetailView: View {
 
     /// Handle setting an item as preferred
     private func handleSetPreferred(_ item: MediaItem) {
+        #if os(iOS)
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
+        #endif
 
         // Save preference
         PreferencesManager.shared.setPreferredMedia(for: day.date, assetIdentifier: item.assetIdentifier)
@@ -188,9 +202,11 @@ struct DayDetailView: View {
                     }
                 }
             }
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: leadingPlacement) {
                     Button {
                         viewModel.startPinningMedia(for: day.date)
                     } label: {
@@ -198,7 +214,7 @@ struct DayDetailView: View {
                     }
                 }
 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: trailingPlacement) {
                     Button("Done") {
                         onDismiss()
                     }
@@ -253,6 +269,7 @@ struct DayDetailView: View {
                 }
             )
         }
+        #if os(iOS)
         .fullScreenCover(item: $selectedMedia) { selected in
             MediaDetailView(
                 mediaItems: mediaItems,
@@ -262,6 +279,17 @@ struct DayDetailView: View {
                 }
             )
         }
+        #else
+        .sheet(item: $selectedMedia) { selected in
+            MediaDetailView(
+                mediaItems: mediaItems,
+                initialIndex: selected.index,
+                onDismiss: {
+                    selectedMedia = nil
+                }
+            )
+        }
+        #endif
     }
 
     private var formattedDate: String {

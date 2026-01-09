@@ -148,7 +148,7 @@ class VideoGenerationViewModel: ObservableObject {
         } catch let error as VideoGenerationError {
             // Known error
             self.error = error
-            currentJob?.status = .failed(error: error.localizedDescription ?? "Unknown error")
+            currentJob?.status = .failed(error: error.localizedDescription)
             isGenerating = false
 
         } catch {

@@ -52,7 +52,9 @@ struct VideoGenerationView: View {
                 .padding()
             }
             .navigationTitle("Generate Video")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
+            #endif
         }
         .sheet(isPresented: $showingShareSheet) {
             if !shareItems.isEmpty {

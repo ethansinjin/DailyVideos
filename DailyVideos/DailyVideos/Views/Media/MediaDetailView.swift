@@ -28,7 +28,9 @@ struct MediaDetailView: View {
                         .tag(index)
                 }
             }
+#if os(iOS) || os(tvOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
+#endif
             .ignoresSafeArea()
 
             // Top bar with controls
@@ -184,7 +186,8 @@ struct LivePhotoView: View {
     }
 }
 
-// MARK: - Live Photo UIViewRepresentable
+// MARK: - Live Photo Representable (UIKit/AppKit)
+#if os(iOS) || os(visionOS)
 struct LivePhotoViewRepresentable: UIViewRepresentable {
     let livePhoto: PHLivePhoto
 
@@ -200,6 +203,23 @@ struct LivePhotoViewRepresentable: UIViewRepresentable {
         uiView.livePhoto = livePhoto
     }
 }
+#elseif os(macOS)
+struct LivePhotoViewRepresentable: NSViewRepresentable {
+    let livePhoto: PHLivePhoto
+
+    func makeNSView(context: Context) -> PHLivePhotoView {
+        let view = PHLivePhotoView()
+        // AppKit PHLivePhotoView does not use UIView content modes.
+        view.livePhoto = livePhoto
+        view.startPlayback(with: .full)
+        return view
+    }
+
+    func updateNSView(_ nsView: PHLivePhotoView, context: Context) {
+        nsView.livePhoto = livePhoto
+    }
+}
+#endif
 
 #Preview("Single Video") {
     MediaDetailView(

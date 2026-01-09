@@ -1,5 +1,8 @@
 import SwiftUI
 internal import Photos
+#if os(iOS)
+import UIKit
+#endif
 
 struct ContentView: View {
     @StateObject private var viewModel = CalendarViewModel()
@@ -8,6 +11,17 @@ struct ContentView: View {
     @AppStorage("navigationControlsPosition") private var navigationControlsPosition: NavigationControlsPosition = .bottom
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+
+    // Platform-specific toolbar placements
+    #if os(iOS)
+    private let leadingPlacement: ToolbarItemPlacement = .navigationBarLeading
+    private let trailingPlacement: ToolbarItemPlacement = .navigationBarTrailing
+    private let bottomPlacement: ToolbarItemPlacement = .bottomBar
+    #else
+    private let leadingPlacement: ToolbarItemPlacement = .automatic
+    private let trailingPlacement: ToolbarItemPlacement = .automatic
+    private let bottomPlacement: ToolbarItemPlacement = .automatic
+    #endif
 
     private struct DayDetail: Identifiable {
         let id = UUID()
@@ -27,18 +41,20 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(viewModel.currentMonth.displayString)
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 if navigationControlsPosition == .bottom {
                     // Bottom toolbar mode - settings only in top bar
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: trailingPlacement) {
                         Button(action: { showingSettings = true }) {
                             Image(systemName: "gear")
                                 .foregroundColor(.primary)
                         }
                     }
 
-                    ToolbarItem(placement: .bottomBar) {
+                    ToolbarItem(placement: bottomPlacement) {
                         HStack(spacing: 20) {
                             Button(action: { viewModel.goToPreviousMonth() }) {
                                 Image(systemName: "chevron.left")
@@ -81,14 +97,14 @@ struct ContentView: View {
                     }
                 } else {
                     // Top navigation bar mode - all controls in top bar
-                    ToolbarItem(placement: .navigationBarLeading) {
+                    ToolbarItem(placement: leadingPlacement) {
                         Button(action: { viewModel.goToPreviousMonth() }) {
                             Image(systemName: "chevron.left")
                                 .foregroundColor(.blue)
                         }
                     }
 
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: trailingPlacement) {
                         HStack(spacing: 12) {
                             Button(action: { viewModel.goToToday() }) {
                                 HStack(spacing: 4) {
@@ -173,7 +189,11 @@ struct ContentView: View {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                     .padding()
-                                    .background(Color(.systemBackground).opacity(0.8))
+                                    #if os(iOS) || os(visionOS)
+                                    .background(Color(uiColor: .systemBackground).opacity(0.8))
+                                    #elseif os(macOS)
+                                    .background(Color(nsColor: .windowBackgroundColor).opacity(0.8))
+                                    #endif
                                     .cornerRadius(10)
                             }
                         }
@@ -204,8 +224,10 @@ struct ContentView: View {
 
     private func handleDayTap(_ day: CalendarDay) {
         // Haptic feedback
+        #if os(iOS)
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
+        #endif
 
         viewModel.selectDay(day)
         // Load media items for the selected day on background thread
