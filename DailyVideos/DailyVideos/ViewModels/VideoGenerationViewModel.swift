@@ -69,24 +69,20 @@ class VideoGenerationViewModel: ObservableObject {
         isLoadingSelections = true
         error = nil
 
-        do {
-            // Get media selections from service
-            let selections = await selectionService.selectMedia(for: timeframe)
+        // Get media selections from service
+        let selections = await selectionService.selectMedia(for: timeframe)
 
-            // Get summary statistics
-            let summary = await selectionService.getTimeframeSummary(timeframe)
+        // Get summary statistics
+        let summary = await selectionService.getTimeframeSummary(timeframe)
 
-            // Update on main thread (already guaranteed by @MainActor)
-            self.mediaSelections = selections
-            self.timeframeSummary = summary
+        // Update on main thread (already guaranteed by @MainActor)
+        self.mediaSelections = selections
+        self.timeframeSummary = summary
 
-            if selections.isEmpty {
-                error = NSError(domain: "VideoGeneration", code: 2, userInfo: [
-                    NSLocalizedDescriptionKey: "No media found in selected timeframe"
-                ])
-            }
-        } catch {
-            self.error = error
+        if selections.isEmpty {
+            error = NSError(domain: "VideoGeneration", code: 2, userInfo: [
+                NSLocalizedDescriptionKey: "No media found in selected timeframe"
+            ])
         }
 
         isLoadingSelections = false
@@ -120,15 +116,16 @@ class VideoGenerationViewModel: ObservableObject {
             let outputURL = try await compositionService.composeVideo(
                 from: mediaSelections,
                 settings: compositionSettings
-            ) { [weak self] progress in
-                Task { @MainActor in
-                    self?.generationProgress = progress
+            ) { progress in
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
+                    self.generationProgress = progress
 
                     // Update job status based on progress
                     if progress < 0.4 {
-                        self?.currentJob?.status = .composing(progress: progress / 0.4)
+                        self.currentJob?.status = .composing(progress: progress / 0.4)
                     } else {
-                        self?.currentJob?.status = .exporting(progress: (progress - 0.4) / 0.6)
+                        self.currentJob?.status = .exporting(progress: (progress - 0.4) / 0.6)
                     }
                 }
             }

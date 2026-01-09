@@ -78,7 +78,11 @@ struct SettingsView: View {
                 Label("Top Navigation Bar", systemImage: "rectangle.topthird.inset.filled")
                     .tag(NavigationControlsPosition.top)
             }
+            #if os(iOS)
             .pickerStyle(.inline)
+            #else
+            .pickerStyle(.radioGroup)
+            #endif
         } header: {
             Text("Appearance")
         } footer: {

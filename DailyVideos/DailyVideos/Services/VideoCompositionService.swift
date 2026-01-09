@@ -88,21 +88,25 @@ actor VideoCompositionService {
     /// - Parameter mediaItem: The media item to load
     /// - Returns: AVAsset for the media
     private func loadAsset(from mediaItem: MediaItem) async throws -> AVAsset {
-        guard let phAsset = mediaItem.asset else {
-            throw VideoGenerationError.assetLoadingFailed(assetId: mediaItem.assetIdentifier)
+        // Access main actor-isolated properties
+        let assetIdentifier = mediaItem.assetIdentifier
+        let mediaType = mediaItem.mediaType
+
+        guard let phAsset = await MainActor.run(body: { mediaItem.asset }) else {
+            throw VideoGenerationError.assetLoadingFailed(assetId: assetIdentifier)
         }
 
         // For videos, load as AVAsset
-        if mediaItem.mediaType == .video {
+        if case .video = mediaType {
             return try await loadVideoAsset(from: phAsset)
         }
 
         // For Live Photos, extract the video component
-        if mediaItem.mediaType == .livePhoto {
+        if case .livePhoto = mediaType {
             return try await loadLivePhotoAsset(from: phAsset)
         }
 
-        throw VideoGenerationError.assetLoadingFailed(assetId: mediaItem.assetIdentifier)
+        throw VideoGenerationError.assetLoadingFailed(assetId: assetIdentifier)
     }
 
     /// Load video asset from PHAsset
@@ -116,7 +120,7 @@ actor VideoCompositionService {
             options.isNetworkAccessAllowed = true
 
             PHImageManager.default().requestAVAsset(forVideo: phAsset, options: options) { avAsset, _, info in
-                if let error = info?[PHImageErrorKey] as? Error {
+                if info?[PHImageErrorKey] != nil {
                     continuation.resume(throwing: VideoGenerationError.assetLoadingFailed(assetId: phAsset.localIdentifier))
                 } else if let avAsset = avAsset {
                     continuation.resume(returning: avAsset)
@@ -155,10 +159,10 @@ actor VideoCompositionService {
                 toFile: tempURL,
                 options: options
             ) { error in
-                if let error = error {
+                if error != nil {
                     continuation.resume(throwing: VideoGenerationError.assetLoadingFailed(assetId: phAsset.localIdentifier))
                 } else {
-                    let asset = AVAsset(url: tempURL)
+                    let asset = AVURLAsset(url: tempURL)
                     continuation.resume(returning: asset)
                 }
             }
@@ -277,32 +281,34 @@ actor VideoCompositionService {
         // Store session reference for cancellation
         currentExportSession = exportSession
 
-        // Start export
-        await exportSession.export()
+        // Start export with progress monitoring
+        do {
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                // Task 1: Export the video
+                group.addTask {
+                    if #available(macOS 15.0, iOS 18.0, *) {
+                        try await exportSession.export(to: outputURL, as: .mp4)
+                    } else {
+                        await exportSession.export()
+                    }
+                }
 
-        // Monitor progress
-        await monitorExportProgress(exportSession: exportSession, progressHandler: progressHandler)
+                // Task 2: Monitor progress
+                group.addTask {
+                    await self.monitorExportProgress(exportSession: exportSession, progressHandler: progressHandler)
+                }
 
-        // Check status
-        switch exportSession.status {
-        case .completed:
+                // Wait for export to complete (monitoring will continue)
+                try await group.next()
+                group.cancelAll()
+            }
+
             currentExportSession = nil
             return outputURL
-
-        case .cancelled:
+        } catch {
             currentExportSession = nil
             try? FileManager.default.removeItem(at: outputURL)
-            throw VideoGenerationError.cancelled
-
-        case .failed:
-            currentExportSession = nil
-            try? FileManager.default.removeItem(at: outputURL)
-            let errorMessage = exportSession.error?.localizedDescription ?? "Unknown error"
-            throw VideoGenerationError.exportFailed(reason: errorMessage)
-
-        default:
-            currentExportSession = nil
-            throw VideoGenerationError.exportFailed(reason: "Export ended in unexpected state")
+            throw VideoGenerationError.exportFailed(reason: error.localizedDescription)
         }
     }
 
@@ -314,9 +320,15 @@ actor VideoCompositionService {
         exportSession: AVAssetExportSession,
         progressHandler: @escaping @Sendable (Double) -> Void
     ) async {
-        while exportSession.status == .exporting || exportSession.status == .waiting {
+        // Monitor progress for up to 10 minutes
+        for _ in 0..<6000 {
             let progress = Double(exportSession.progress)
             progressHandler(progress)
+
+            // Check if we're done (progress reaches 1.0 or very close)
+            if progress >= 0.99 {
+                break
+            }
 
             // Wait a bit before checking again
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
