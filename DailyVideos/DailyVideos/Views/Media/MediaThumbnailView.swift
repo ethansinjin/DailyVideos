@@ -1,10 +1,8 @@
 import SwiftUI
 #if os(macOS)
 import AppKit
-typealias PlatformImage = NSImage
 #else
 import UIKit
-typealias PlatformImage = UIImage
 #endif
 
 struct MediaThumbnailView: View {
@@ -21,13 +19,17 @@ struct MediaThumbnailView: View {
                 if let thumbnail = thumbnail {
                     #if os(macOS)
                     Image(nsImage: thumbnail)
-                    #else
-                    Image(uiImage: thumbnail)
-                    #endif
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
+                    #else
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                    #endif
                 } else if isLoading {
                     Color.gray.opacity(0.2)
                         .frame(width: geometry.size.width, height: geometry.size.height)

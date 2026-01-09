@@ -1,10 +1,8 @@
 import SwiftUI
 #if os(macOS)
 import AppKit
-typealias PlatformImage = NSImage
 #else
 import UIKit
-typealias PlatformImage = UIImage
 #endif
 
 struct DayCell: View {
@@ -22,15 +20,21 @@ struct DayCell: View {
                 if let thumbnail = thumbnail {
                     #if os(macOS)
                     Image(nsImage: thumbnail)
-                    #else
-                    Image(uiImage: thumbnail)
-                    #endif
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
                         .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    #else
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                        .opacity(calendarDay.isInCurrentMonth ? 1.0 : 0.3)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    #endif
                 } else {
                     backgroundColor
                         .frame(width: geometry.size.width, height: geometry.size.height)
