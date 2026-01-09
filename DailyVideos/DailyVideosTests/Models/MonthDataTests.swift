@@ -9,6 +9,7 @@ import Testing
 import Foundation
 @testable import DailyVideos
 
+@MainActor
 struct MonthDataTests {
 
     // MARK: - Initialization Tests
