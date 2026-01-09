@@ -1,12 +1,12 @@
 # Unit Testing Plan - Video Generation
 
 ## Status
-📋 **Planned** — new plan focused on video generation and remaining untested areas.
+🚧 **In Progress** — Phase 1 model tests implemented; remaining phases require test seams/mocks.
 
 ## Scope
 Focus on the Video Generation tab and its supporting models/services. Prioritize low-dependency unit tests first, then introduce test seams for PhotoKit/AVFoundation-backed services.
 
-## Phase 1: Low-Dependency Model Tests (P1)
+## Phase 1: Low-Dependency Model Tests (P1) ✅
 - TimeframeSelection
   - Start/end dates for month/year/custom
   - Day count inclusive of start/end

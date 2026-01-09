@@ -80,7 +80,7 @@ Architecture and feature plans are available in the `plans/` directory:
 - Complex feature involving video processing
 
 ### 5. UNIT_TESTING_PLAN.md - Comprehensive Testing Strategy
-**Status**: 🚧 **IN PROGRESS** (Calendar + notification tests implemented; gaps remain)
+**Status**: 🚧 **IN PROGRESS** (Calendar + notification + video generation model tests implemented; gaps remain)
 - Detailed unit test plan for all models, services, and view models
 - UI test plan for all user flows
 - Accessibility and performance testing
