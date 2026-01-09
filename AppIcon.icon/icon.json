@@ -1,0 +1,24 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "extended-srgb:0.38039,0.33333,0.96078,1.00000",
+      "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}
