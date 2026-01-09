@@ -1,5 +1,10 @@
 import SwiftUI
 import UserNotifications
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -232,9 +237,15 @@ struct SettingsView: View {
     }
 
     private func openAppSettings() {
+        #if os(iOS)
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
         }
+        #elseif os(macOS)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Photos") {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
     }
 }
 
@@ -259,9 +270,15 @@ private struct NotificationAlertModifier: ViewModifier {
     }
 
     private func openAppSettings() {
+        #if os(iOS)
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
         }
+        #elseif os(macOS)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Photos") {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
     }
 }
 

@@ -2,8 +2,10 @@ import Foundation
 internal import Photos
 #if os(macOS)
 import AppKit
+typealias PlatformImage = NSImage
 #else
 import UIKit
+typealias PlatformImage = UIImage
 #endif
 import Combine
 
@@ -14,7 +16,7 @@ class PhotoLibraryManager: ObservableObject {
     @Published var permissionStatus: PHAuthorizationStatus = .notDetermined
 
     private let imageManager = PHCachingImageManager()
-    private var thumbnailCache: [String: UIImage] = [:]
+    private var thumbnailCache: [String: PlatformImage] = [:]
 
     private init() {
         updatePermissionStatus()
@@ -247,7 +249,7 @@ class PhotoLibraryManager: ObservableObject {
     ///   - mediaItem: The media item
     ///   - size: The desired size of the thumbnail
     ///   - completion: Completion handler with the thumbnail image
-    func getThumbnail(for mediaItem: MediaItem, size: CGSize, completion: @escaping (UIImage?) -> Void) {
+    func getThumbnail(for mediaItem: MediaItem, size: CGSize, completion: @escaping (PlatformImage?) -> Void) {
         // Check cache first
         if let cachedImage = thumbnailCache[mediaItem.assetIdentifier] {
             completion(cachedImage)
@@ -286,7 +288,7 @@ class PhotoLibraryManager: ObservableObject {
     ///   - assetIdentifier: The PHAsset local identifier
     ///   - size: The desired size of the thumbnail
     ///   - completion: Completion handler with the thumbnail image
-    func getThumbnail(for assetIdentifier: String, size: CGSize, completion: @escaping (UIImage?) -> Void) {
+    func getThumbnail(for assetIdentifier: String, size: CGSize, completion: @escaping (PlatformImage?) -> Void) {
         // Check cache first
         if let cachedImage = thumbnailCache[assetIdentifier] {
             completion(cachedImage)

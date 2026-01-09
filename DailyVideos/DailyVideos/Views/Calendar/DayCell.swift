@@ -1,10 +1,17 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+typealias PlatformImage = NSImage
+#else
+import UIKit
+typealias PlatformImage = UIImage
+#endif
 
 struct DayCell: View {
     let calendarDay: CalendarDay
     let isToday: Bool
 
-    @State private var thumbnail: UIImage?
+    @State private var thumbnail: PlatformImage?
     @State private var isLoadingThumbnail = false
     @State private var isPressed = false
 
@@ -13,7 +20,11 @@ struct DayCell: View {
             ZStack {
                 // Background with thumbnail or plain color
                 if let thumbnail = thumbnail {
+                    #if os(macOS)
+                    Image(nsImage: thumbnail)
+                    #else
                     Image(uiImage: thumbnail)
+                    #endif
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: geometry.size.width, height: geometry.size.height)

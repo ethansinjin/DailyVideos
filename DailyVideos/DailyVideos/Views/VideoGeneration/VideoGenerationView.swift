@@ -400,6 +400,7 @@ struct VideoGenerationView: View {
 
 // MARK: - Share Sheet
 
+#if os(iOS)
 /// UIKit share sheet wrapper for SwiftUI
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
@@ -416,6 +417,28 @@ struct ShareSheet: UIViewControllerRepresentable {
         // No updates needed
     }
 }
+#elseif os(macOS)
+import AppKit
+
+/// AppKit share sheet wrapper for SwiftUI
+struct ShareSheet: NSViewControllerRepresentable {
+    let items: [Any]
+
+    func makeNSViewController(context: Context) -> NSViewController {
+        let controller = NSViewController()
+        return controller
+    }
+
+    func updateNSViewController(_ nsViewController: NSViewController, context: Context) {
+        // Trigger sharing picker
+        if let view = nsViewController.view.window?.contentView,
+           let url = items.first as? URL {
+            let picker = NSSharingServicePicker(items: [url])
+            picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
+        }
+    }
+}
+#endif
 
 #Preview {
     VideoGenerationView()

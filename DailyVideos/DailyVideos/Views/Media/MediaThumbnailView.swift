@@ -1,18 +1,29 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+typealias PlatformImage = NSImage
+#else
+import UIKit
+typealias PlatformImage = UIImage
+#endif
 
 struct MediaThumbnailView: View {
     let mediaItem: MediaItem
     var showPinBadge: Bool = false
     var showCrossDatePinBadge: Bool = false
     var pinSourceDate: Date? = nil
-    @State private var thumbnail: UIImage?
+    @State private var thumbnail: PlatformImage?
     @State private var isLoading = true
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 if let thumbnail = thumbnail {
+                    #if os(macOS)
+                    Image(nsImage: thumbnail)
+                    #else
                     Image(uiImage: thumbnail)
+                    #endif
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: geometry.size.width, height: geometry.size.height)
