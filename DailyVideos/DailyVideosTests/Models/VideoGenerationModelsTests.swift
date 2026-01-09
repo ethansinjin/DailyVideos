@@ -61,6 +61,23 @@ struct VideoGenerationModelsTests {
         #expect(timeframe.dayCount == 4)
     }
 
+    @Test func testTimeframeSelectionDisplayNames() async throws {
+        let monthSelection = TimeframeSelection(type: .month(year: 2024, month: 1))
+        #expect(monthSelection.displayName == "January 2024")
+
+        let yearSelection = TimeframeSelection(type: .year(year: 2026))
+        #expect(yearSelection.displayName == "2026")
+
+        let calendar = Calendar.current
+        let start = calendar.date(from: DateComponents(year: 2024, month: 10, day: 3))!
+        let end = calendar.date(from: DateComponents(year: 2024, month: 10, day: 6))!
+        let customSelection = TimeframeSelection(type: .custom(startDate: start, endDate: end))
+
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        #expect(customSelection.displayName == "\(formatter.string(from: start)) - \(formatter.string(from: end))")
+    }
+
     // MARK: - DayMediaSelection
 
     @Test func testDayMediaSelectionFlagsAndLabels() async throws {
@@ -132,6 +149,22 @@ struct VideoGenerationModelsTests {
                                          audioCrossfadeDuration: 0,
                                          includeDateOverlay: false,
                                          dateOverlayPosition: .topLeft).fileSizeMultiplier == 8.0)
+        #expect(VideoCompositionSettings(resolution: .resolution720p,
+                                         frameRate: 30,
+                                         transitionStyle: .none,
+                                         transitionDuration: 0,
+                                         includeAudio: true,
+                                         audioCrossfadeDuration: 0,
+                                         includeDateOverlay: false,
+                                         dateOverlayPosition: .topLeft).fileSizeMultiplier == 1.0)
+        #expect(VideoCompositionSettings(resolution: .original,
+                                         frameRate: 30,
+                                         transitionStyle: .none,
+                                         transitionDuration: 0,
+                                         includeAudio: true,
+                                         audioCrossfadeDuration: 0,
+                                         includeDateOverlay: false,
+                                         dateOverlayPosition: .topLeft).fileSizeMultiplier == 2.5)
     }
 
     // MARK: - VideoGenerationStatus
@@ -153,6 +186,9 @@ struct VideoGenerationModelsTests {
 
         #expect(VideoGenerationStatus.composing(progress: 0.42).statusMessage == "Composing video... 42%")
         #expect(VideoGenerationStatus.exporting(progress: 0.7).statusMessage == "Exporting... 70%")
+        #expect(VideoGenerationStatus.preparing.statusMessage == "Preparing...")
+        #expect(VideoGenerationStatus.completed(outputURL: URL(fileURLWithPath: "/tmp/out.mp4")).statusMessage == "Completed")
+        #expect(VideoGenerationStatus.failed(error: "nope").statusMessage == "Failed: nope")
     }
 
     // MARK: - VideoGenerationJob
@@ -178,6 +214,19 @@ struct VideoGenerationModelsTests {
         #expect(job.cheatingPinCount == 1)
         #expect(job.estimatedDuration == 10.0)
         #expect(job.estimatedDurationString == "10s")
+    }
+
+    @Test func testVideoGenerationJobDurationFormattingInMinutes() async throws {
+        let calendar = Calendar.current
+        let date = calendar.date(from: DateComponents(year: 2024, month: 6, day: 3))!
+        let mediaA = MediaItem(assetIdentifier: "asset-a", date: date, mediaType: .video, duration: 62.0, displayContext: .native)
+
+        let selection = DayMediaSelection(date: date, selectedMedia: mediaA, selectionReason: .automatic(priority: 1))
+        let timeframe = TimeframeSelection(type: .month(year: 2024, month: 6))
+        let job = VideoGenerationJob(timeframe: timeframe, mediaSelections: [selection])
+
+        #expect(job.estimatedDuration == 62.0)
+        #expect(job.estimatedDurationString == "1:02")
     }
 
     // MARK: - TimeframeSummary
