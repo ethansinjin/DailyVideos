@@ -43,8 +43,8 @@ struct CalendarViewModelTests {
 
         viewModel.goToNextMonth()
 
-        // Wait a moment for async operations
-        try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        // Wait for month to actually change
+        await waitForMonthChange(viewModel, from: (initialYear, initialMonth))
 
         if initialMonth == 12 {
             #expect(viewModel.currentMonth.year == initialYear + 1)
@@ -55,6 +55,32 @@ struct CalendarViewModelTests {
         }
     }
 
+    @MainActor
+    private func waitForLoadingToComplete(_ viewModel: CalendarViewModel, timeout: TimeInterval = 2.0) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while viewModel.isLoading && Date() < deadline {
+            // Yield to allow the main queue to process pending work
+            await Task.yield()
+            // Small delay to avoid tight loop
+            try? await Task.sleep(nanoseconds: 10_000_000) // 0.01 seconds
+        }
+        // Extra yield to ensure final updates are processed
+        await Task.yield()
+    }
+
+    @MainActor
+    private func waitForMonthChange(_ viewModel: CalendarViewModel, from initial: (year: Int, month: Int), timeout: TimeInterval = 2.0) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while (viewModel.currentMonth.year == initial.year && viewModel.currentMonth.month == initial.month) && Date() < deadline {
+            // Yield to allow the main queue to process pending work
+            await Task.yield()
+            // Small delay to avoid tight loop
+            try? await Task.sleep(nanoseconds: 10_000_000) // 0.01 seconds
+        }
+        // Extra yield to ensure all updates are processed
+        await Task.yield()
+    }
+
     @Test func testGoToPreviousMonth() async throws {
         let viewModel = CalendarViewModel()
         let initialMonth = viewModel.currentMonth.month
@@ -62,8 +88,8 @@ struct CalendarViewModelTests {
 
         viewModel.goToPreviousMonth()
 
-        // Wait a moment for async operations
-        try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        // Wait for month to actually change
+        await waitForMonthChange(viewModel, from: (initialYear, initialMonth))
 
         if initialMonth == 1 {
             #expect(viewModel.currentMonth.year == initialYear - 1)
@@ -76,24 +102,27 @@ struct CalendarViewModelTests {
 
     @Test func testGoToToday() async throws {
         let viewModel = CalendarViewModel()
-
-        // Navigate away from current month
-        viewModel.goToNextMonth()
-        try await Task.sleep(nanoseconds: 100_000_000)
-        viewModel.goToNextMonth()
-        try await Task.sleep(nanoseconds: 100_000_000)
-
-        // Go back to today
-        viewModel.goToToday()
-        try await Task.sleep(nanoseconds: 100_000_000)
-
         let calendar = Calendar.current
         let now = Date()
-        let currentYear = calendar.component(.year, from: now)
-        let currentMonth = calendar.component(.month, from: now)
+        let expectedYear = calendar.component(.year, from: now)
+        let expectedMonth = calendar.component(.month, from: now)
 
-        #expect(viewModel.currentMonth.year == currentYear)
-        #expect(viewModel.currentMonth.month == currentMonth)
+        // Navigate away from current month
+        let firstMonth = (viewModel.currentMonth.year, viewModel.currentMonth.month)
+        viewModel.goToNextMonth()
+        await waitForMonthChange(viewModel, from: firstMonth)
+
+        let secondMonth = (viewModel.currentMonth.year, viewModel.currentMonth.month)
+        viewModel.goToNextMonth()
+        await waitForMonthChange(viewModel, from: secondMonth)
+
+        // Go back to today
+        let thirdMonth = (viewModel.currentMonth.year, viewModel.currentMonth.month)
+        viewModel.goToToday()
+        await waitForMonthChange(viewModel, from: thirdMonth)
+
+        #expect(viewModel.currentMonth.year == expectedYear)
+        #expect(viewModel.currentMonth.month == expectedMonth)
     }
 
     // MARK: - Day Selection Tests
@@ -128,7 +157,7 @@ struct CalendarViewModelTests {
         viewModel.refreshMediaData()
 
         // Wait for refresh to complete
-        try await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+        await waitForLoadingToComplete(viewModel)
 
         // Should not crash and should complete
         #expect(true)
@@ -166,7 +195,7 @@ struct CalendarViewModelTests {
         let mediaItems = viewModel.getMediaItems(for: day)
 
         // Should return an array (may be empty)
-        #expect(mediaItems is [MediaItem])
+        #expect(mediaItems.isEmpty || !mediaItems.isEmpty) // Always true, just checking it doesn't crash
     }
 
     // MARK: - Edge Cases
@@ -177,13 +206,13 @@ struct CalendarViewModelTests {
         // Navigate forward multiple times
         for _ in 1...5 {
             viewModel.goToNextMonth()
-            try await Task.sleep(nanoseconds: 50_000_000)
+            await waitForLoadingToComplete(viewModel)
         }
 
         // Navigate backward multiple times
         for _ in 1...5 {
             viewModel.goToPreviousMonth()
-            try await Task.sleep(nanoseconds: 50_000_000)
+            await waitForLoadingToComplete(viewModel)
         }
 
         // Should not crash
@@ -201,15 +230,17 @@ struct CalendarViewModelTests {
         // Navigate to December
         let monthsToDecember = 12 - currentMonth
         for _ in 0..<monthsToDecember {
+            let beforeNav = (viewModel.currentMonth.year, viewModel.currentMonth.month)
             viewModel.goToNextMonth()
-            try await Task.sleep(nanoseconds: 50_000_000)
+            await waitForMonthChange(viewModel, from: beforeNav)
         }
 
         let yearBeforeTransition = viewModel.currentMonth.year
 
         // Cross to January
+        let decemberState = (viewModel.currentMonth.year, viewModel.currentMonth.month)
         viewModel.goToNextMonth()
-        try await Task.sleep(nanoseconds: 100_000_000)
+        await waitForMonthChange(viewModel, from: decemberState)
 
         #expect(viewModel.currentMonth.month == 1)
         #expect(viewModel.currentMonth.year == yearBeforeTransition + 1)
